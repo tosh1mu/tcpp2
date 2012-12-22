@@ -150,7 +150,7 @@ void Convert( const Eigen::Matrix<T, row_num, col_num> &eigen_matrix, std::vecto
  * @param[out] std_vector std::vector\<std::vector\<T\> \>, std_vector.size() == row_num and std_vector[0].size() == col_num
  */
 template <typename T, const int row_num, const int col_num>
-void Convert(const std::vector<std::vector<T> > &std_vector, Eigen::Matrix<T, row_num, col_num> &eigen_matrix) {
+void Convert( const std::vector<std::vector<T> > &std_vector, Eigen::Matrix<T, row_num, col_num> &eigen_matrix ) {
 	int size_of_std_vector = static_cast<int>( std_vector.size() );
 	int size_of_std_vector_0 = static_cast<int>( std_vector[0].size() );
 	
