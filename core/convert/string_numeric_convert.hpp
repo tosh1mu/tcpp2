@@ -1,13 +1,13 @@
 /**
- * @file val_convert.hpp
- * @brief Convert standerd values
+ * @file string_numeric_convert.hpp
+ * @brief Convert string <-> numeric
  * @author Toshimitsu Takahashi
  * @date 2012/12/22
  *
  */
 
-#ifndef TCPP2_VAL_CONVERT_HPP_
-#define TCPP2_VAL_CONVERT_HPP_
+#ifndef TCPP2_STRING_NUMERIC_CONVERT_HPP_
+#define TCPP2_STRING_NUMERIC_CONVERT_HPP_
 
 #include <cmath>
 #include <string>
@@ -63,4 +63,4 @@ T numeric( std::string string ) {
 
 } /* namespace tcpp */
 
-#endif /* TCPP2_VAL_CONVERT_HPP_ */
+#endif /* TCPP2_STRING_NUMERIC_CONVERT_HPP_ */
