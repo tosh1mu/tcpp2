@@ -85,7 +85,7 @@ void Convert( const Eigen::Array<T, row_num, col_num> &eigen_array, std::vector<
 		std::vector<T> row_vector;
 		row_vector.reserve(cols);
 		for( int col = 0; col < cols; ++col ) {
-			row_vector.push_back( eigen_array(row, col) );
+			row_vector.push_back( eigen_array( row, col ) );
 		}
 		std_vector.push_back( row_vector );
 	}
