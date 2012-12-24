@@ -168,5 +168,5 @@ void Convert( const std::vector<std::vector<T> > &std_vector, Eigen::Matrix<T, r
 
 } /* namespace tcpp */
 
-#endif
+#endif /* TCPP_EIGEN_STL_CONVERT_HPP_ */
 
