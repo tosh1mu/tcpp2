@@ -9,9 +9,15 @@
 #ifndef TCPP2_EIGEN_STL_CONVERT_HPP_
 #define TCPP2_EIGEN_STL_CONVERT_HPP_
 
+#include "earray2vector.hpp"
+#include "emat2vector.hpp"
+
 #include <cassert>
-#include <vector>
-#include <eigen3/Eigen/Core>
+
+#ifdef USING_TBB
+#include "tbb/task_scheduler_init.h"
+#include "tbb/parallel_for.h"
+#endif
 
 /**
  * @namespace tcpp
@@ -26,16 +32,14 @@ namespace tcpp {
  */
 template <typename T, int size>
 void Convert( const Eigen::Array<T, size, 1> &eigen_array, std::vector<T> &std_vector ) {
-	assert( std_vector.empty() );
-	int element_num;
-	if( size > 0 ) {
-		element_num = size;
-	} else {
-		element_num = eigen_array.rows();
-	}
-	std_vector.reserve( element_num );
-	for( int i = 0; i < element_num; ++i )
-		std_vector.push_back( eigen_array.coeff(i) );
+	EArray2Vector<T, size> earray2vector( eigen_array, std_vector );
+#ifdef USING_TBB
+	tbb::task_scheduler_init init;
+	tbb::blocked_range<int> range(0, eigen_array.rows(), 1000);
+	tbb::parallel_for( range, earray2vector );
+#else
+	earray2vector();
+#endif
 }
 
 /**
@@ -120,28 +124,14 @@ void Convert( const std::vector<std::vector<T> > &std_vector, Eigen::Array<T, ro
  */
 template <typename T, int row_num, int col_num>
 void Convert( const Eigen::Matrix<T, row_num, col_num> &eigen_matrix, std::vector<std::vector<T> > &std_vector ) {
-	assert( std_vector.empty() );
-	
-	int rows, cols;
-	if( row_num > 0 ) {
-		rows = row_num;
-	} else {
-		rows = eigen_matrix.rows();
-	}
-	if( col_num > 0 ) {
-		cols = col_num;
-	} else {
-		cols = eigen_matrix.cols();
-	}
-	
-	std_vector.reserve(rows);
-	for( int row = 0 ; row < rows; ++row ) {
-		std::vector<T> row_vector;
-		row_vector.reserve(cols);
-		for( int col = 0; col < cols; ++col )
-			row_vector.push_back( eigen_matrix(row, col) );
-		std_vector.push_back( row_vector );
-	}
+	EMat2Vector<T, row_num, col_num> emat2vector( eigen_matrix, std_vector );
+#ifdef USING_TBB
+	tbb::task_scheduler_init init;
+	tbb::blocked_range2d<int> range(0, eigen_matrix.rows(), 100, 0, eigen_matrix.cols(), 100);
+	tbb::parallel_for( range, emat2vector );
+#else
+	emat2vector();
+#endif
 }
 
 /**
