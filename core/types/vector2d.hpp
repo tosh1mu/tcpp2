@@ -9,13 +9,12 @@
 #ifndef TCPP_VECTOR2D_HPP_
 #define TCPP_VECTOR2D_HPP_
 
-#define USING_TBB
-
 #include <vector>
 
 #ifdef USING_TBB
 #include <tbb/blocked_range.h>
 #include <tbb/blocked_range2d.h>
+#include <tbb/parallel_for.h>
 #endif
 
 /**
@@ -33,190 +32,125 @@ public:
 	/**
 	 * @brief Default constructor
 	 */
-	Vector2d(): vector2d_() {}
+	Vector2d(): container_() {}
 
 	/**
 	 * @brief Copy constructor
 	 */
-	Vector2d( const Vector2d& vector2d ): vector2d_(vector2d) {}
+	Vector2d( const Vector2d& vector2d ): container_(vector2d.container()) {}
 
 	/**
 	 * @brief Constructor with std::vector
 	 */
-	Vector2d( const std::vector<std::vector<T> >& vector2d ): vector2d_(vector2d) {}
+	explicit Vector2d( const std::vector<std::vector<T> >& container ): container_(container) {}
 
 	/********** Destructor **********/
 	/**
 	 * @brief Virtual destructor
 	 */
-	virtual ~Vector2d() {}
+	virtual ~Vector2d() = 0;
 
-	/********* Initializers **********/
+	/********** Accessor **********/
 	/**
-	 * @brief Set all elements to 0
+	 * @brief Access to the core container
 	 */
-	void InitZero() {
-		int rows = static_cast<int>( vector2d_.size() );
-		if( rows > 0 ) {
-			int cols = static_cast<int>( vector2d_[0].size() );
+	const std::vector<std::vector<T> >& container() { return container_; }
+
+	/********* Initializing methods **********/
+	/**
+	 * @brief Initialize and set all the element to zero
+	 * @param[in] rows Number of rows
+	 * @param[in] cols Number of columns
+	 */
+	void InitZero( int rows, int cols ) {
+		Initializer zero_initializer( container_, rows, cols, 0 );
+#ifdef USING_TBB
+		tbb::blocked_range<int> range(0, rows, 100);
+		tbb::parallel_for( range, zero_initializer );
+#else
+		zero_initializer();
+#endif
+	}
+
+	/********** Property getting methods **********/
+	/**
+	 * @brief Get the number of rows
+	 */
+	int rows() const { return static_cast<int>( container_.size() ); }
+
+	/**
+	 * @brief Get the number of columns
+	 */
+	int cols() const {
+		if( container_.size() > 0 ) {
+			return static_cast<int>( container_.size() );
+		} else {
+			return -1;
 		}
 	}
+
 	/**
-	 * @brief Resize to (size x size) and set all elements to 0
+	 * @brief Get the number of elements
 	 */
-	void InitZero( int size ) {
-		
+	int size() const {
+		if( container_.size() > 0 ) {
+			return rows() * cols();
+		} else {
+			return -1;
+		}
 	}
-	
+
+	/**
+	 * @brief Confirm whether the container is empty
+	 */
+	bool empty() const {
+		return container_.empty();
+	}
+
 private:
 	/********** Member Variables **********/
-	std::vector<std::vector<T> >& vector2d_;
+	std::vector<std::vector<T> > container_;
 
-	/********** Resizers **********/
+	/********** Member Classes **********/
 	/**
-	 * @brief Base class of resizers
-	 */
-	class Resizer {
-	public:
-		/********** Constructors **********/
-		/**
-		 * @brief Default constructor
-		 */
-		Resizer(): rows_(0), cols_(0), vector2d_() {}
-
-		/**
-		 * @brief Constructor
-		 */
-		Resizer( std::vector<std::vector<T> >& vector2d, int rows, int cols ):
-			rows_(rows), cols_(cols), vector2d_(vector2d) {}
-
-		/********** Destructor **********/
-		/**
-		 * @brief Destructor
-		 */
-		virtual ~Resizer() {}
-
-		/********** Operators **********/
-#ifdef USING_TBB
-		/**
-		 * @brief operator() for tbb::parallel_for
-		 * @param[in] range tbb::blocked_range<int>
-		 */
-		void operator()( const tbb::blocked_range<int>& range ) const {
-			
-		}
-#endif
-		
-	private:
-		int rows_, cols_; //!< Size parameters
-		std::vector<std::vector<T> >& vector2d_; //!< Target std::vector<std::vector<T> >
-	};
-
-	/********** Initializers **********/
-	/**
-	 * @brief Abstract class of initializers
+	 * @brief Initializer
 	 */
 	class Initializer {
 	public:
 		/********** Constructors **********/
 		/**
-		 * @brief Default constructor
-		 */
-		Initializer():vector2d_() {}
-
-		/**
 		 * @brief Constructor
 		 * @param[in] vector2d std::vector<std::vector<T> > to initialize
 		 */
-		Initializer( std::vector<std::vector<T> >& vector2d ): vector2d_(vector2d) {}
-
-		/********** Destructor **********/
-		/**
-		 * @brief Destructor
-		 */
-		virtual ~Initializer() {}
+		Initializer( std::vector<std::vector<T> >& container, int rows, int cols, T constant ):
+			container_(container), rows_(rows), cols_(cols), constant_(constant) {}
 
 		/********** Operators **********/
 #ifdef USING_TBB
 		/**
-		 * @brief operator() for tbb::parallel_for
-		 * @param[in] range tbb::blocked_range2d<int>
+		 * @brief virtual operator() for tbb::parallel_for
+		 * @param[in] range tbb::blocked_range<int>
 		 */
-		virtual void operator()( const tbb::blocked_range2d<int>& range ) {}
+		void operator()( const tbb::blocked_range<int>& range ) const {
+			for( int row = range.begin(); row != range.end(); ++row ) {
+				container_.push_back( std::vector<T>( cols_, constant_ ) );
+			}
+		}
 #endif
 		
 		/**
-		 * @brief operetor() to use in case no tbb
+		 * @brief virtual operetor() to use in case no tbb
 		 */
-		virtual void operator()() {}
+		void operator()() const {
+			for( int row = 0; row < rows_; ++row ) {
+				container_.push_back( std::vector<T>( cols_, constant_ ) );
+			}
+		}
 		
 	protected:
-		std::vector<std::vector<T> >& vector2d_; //!< Reference to target
-
-		/**
-		 * @brief Common function to set element values
-		 * @param[in] row Row of the element
-		 * @param[in] col Column of the element
-		 * @param[in] val Value the element set to be
-		 */
-		void SetElement( int row, int col, T val ) {
-			vector2d_[row][col] = val;
-		}
-	};
-
-	/**
-	 * @brief Initializer class to initialize all the elements with a constant
-	 */
-	class ConstInitializer: public Initializer {
-	public:
-		/********** Constructors **********/
-		/**
-		 * @brief Default constructor
-		 */
-		ConstInitializer(): Initializer(), constant_(0) {}
-
-		/**
-		 * @brief Constructor
-		 * @param[in] vector2d std::vector<std::vector<T> > to initialize
-		 * @param[in] constant Constant value all the elements set to be
-		 */
-		ConstInitializer( std::vector<std::vector<T> >& vector2d, T constant ):
-			Initializer(vector2d), constant_(constant) {}
-
-		/********** Destructor **********/
-		/**
-		 * @brief Destructor
-		 */
-		virtual ~ConstInitializer() {}
-
-		/********** Operators **********/
-#ifdef USING_TBB
-		/**
-		 * @brief Overloaded operator() for tbb::parallel_for
-		 * @param[in] tbb::blocked_range2d<int>
-		 */
-		void operator()( const tbb::blocked_range2d<int>& range ) {
-			for( int row = range.rows().begin(); row != range.rows().end(); ++row ) {
-				for( int col = range.cols().begin(); col != range.cols().end(); ++col ) {
-					SetElement( row, col, constant_ );
-				}
-			}
-		}
-#endif
-		
-		/**
-		 * @brief Overloaded operator() to use in case no tbb
-		 */
-		void operator()() {
-			for( int row = 0, rows = static_cast<int>(vector2d_.size()); row < rows; ++row ) {
-				for( int col = 0, cols = static_cast<int>(vector2d_[0].size()); col < cols; ++col ) {
-					SetElement( row, col, constant_ );
-				}
-			}
-		}
-		
-	private:
-		T constant_; //!< Constant value all the elements set to be
+		std::vector<std::vector<T> >& container_; //!< Reference to target container
+		int rows_, cols_; //!< Size parameters
+		T constant_; //!< Constant
 	};
 };
 
