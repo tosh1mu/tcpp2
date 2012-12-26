@@ -9,11 +9,11 @@
 #ifndef TCPP_VECTOR2D_HPP_
 #define TCPP_VECTOR2D_HPP_
 
+#include "array2d.hpp"
 #include <vector>
 
 #ifdef USING_TBB
 #include <tbb/blocked_range.h>
-#include <tbb/blocked_range2d.h>
 #include <tbb/parallel_for.h>
 #endif
 
@@ -26,7 +26,7 @@ namespace tcpp {
  * @brief 2-dimensional extended class of std::vector<T>
  */
 template <typename T>
-class Vector2d {
+class Vector2d: public Array2d<T> {
 public:
 	/********** Constructors **********/
 	/**
@@ -52,9 +52,26 @@ public:
 
 	/********** Accessor **********/
 	/**
-	 * @brief Access to the core container
+	 * @brief Get const reference of the core container
+	 * @return Const reference of the core container (std::vector<std::vector<T> >)
 	 */
 	const std::vector<std::vector<T> >& container() { return container_; }
+
+	/**
+	 * @brief Get const reference of the element
+	 */
+	const T& elem( int row, int col ) const {
+		assert( row >= 0 && row < rows() && col >= 0 && col < cols() );
+		return container_[row][col];
+	}
+
+	/**
+	 * @brief Get reference of the element
+	 */
+	T& elemRef( int row, int col ) const {
+		assert( row >= 0 && row < rows() && col >= 0 && col < cols() );
+		return container_[row][col];
+	}
 
 	/********* Initializing methods **********/
 	/**

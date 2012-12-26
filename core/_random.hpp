@@ -14,46 +14,47 @@
 #include <boost/random.hpp>
 #include <boost/array.hpp>
 
+/**
+ * @namespace tcpp
+ */
 namespace tcpp {
 
-// Distribusion: boost::uniform_01<> etc.
+/**
+ * @brief Random number generator class
+ * @note Distribusion: boost::uniform_01<> etc.
+ */
 template <class Distribution, class Generator = boost::mt19937>
 class RandNumMaker {
-	Generator generator_;
-	Distribution distribution_;
-	boost::variate_generator<Generator, Distribution> random_;
 public:
+	/********** Constructors **********/
+	/**
+	 * @brief
+	 */
 	RandNumMaker():
-		generator_(static_cast<unsigned long>(time(0))), random_(generator_, distribution_) {}
+		generator_( static_cast<unsigned long>( time(0) ) ), random_( generator_, distribution_ ) {}
 	
 	template<typename T1>
-	RandNumMaker( T1 a1 ):
-		generator_(static_cast<unsigned long>(time(0))), distribution_(a1), random_(generator_, distribution_) {}
+	explicit RandNumMaker( T1 a1 ):
+		generator_( static_cast<unsigned long>( time(0) ) ), distribution_(a1), random_( generator_, distribution_ ) {}
 	
 	template<typename T1, typename T2>
 	RandNumMaker( T1 a1, T2 a2 ):
-		generator_(static_cast<unsigned long>(time(0))), distribution_(a1, a2), random_(generator_, distribution_) {}
+		generator_( static_cast<unsigned long>( time(0) ) ), distribution_( a1, a2 ), random_( generator_, distribution_ ) {}
 
 	typename Distribution::result_type operator()() { return random_(); }
 	
-	template<std::size_t N>
-	void GetArray( boost::array<int, N> &array ) {
-		for(unsigned int i=0; i<N; ++i)
-			array[i] = static_cast<int>(random_());
-	}
-	
-	template<std::size_t N>
-	void GetArray( boost::array<float, N> &array ) {
-		for(unsigned int i=0; i<N; ++i)
-			array[i] = static_cast<float>(random_());
-	}
-	
-	template<std::size_t N>
-	void GetArray( boost::array<double, N> &array ) {
-		for(unsigned int i=0; i<N; ++i)
-			array[i] = static_cast<double>(random_());
-	}
+private:
+	Generator generator_;
+	Distribution distribution_;
+	boost::variate_generator<Generator, Distribution> random_;
 };
+
+	template<size_t N, typename T>
+	void GetArray( boost::array<T, N>& array ) {
+		for( size_t i = 0; i < N; ++i ) {
+			array[i] = static_cast<T>( random_() );
+		}
+	}
 
 template <size_t N>
 int GetRandom01Array( unsigned int select_number, boost::array<int, N> &output_array) {

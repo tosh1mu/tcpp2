@@ -11,7 +11,6 @@
 
 #include <iostream>
 #include <string>
-#include <boost/timer.hpp>
 
 /* info strings */
 #define FUNC_NAME std::string(__func__)
@@ -24,7 +23,7 @@
 #define CHECK_STREAM "***CHECK***" << "[" << PLACE_STREAM << "]"
 
 /* print infos */
-#define PRINT_ERROR(MSG) std::cout << ERROR_STREAM(MSG) << std:;endl
+#define PRINT_ERROR(MSG) std::cout << ERROR_STREAM(MSG) << std::endl
 #define PRINT_WARNING(MSG) std::cout << WARNING_STREAM(MSG) << std::endl
 #define PRINT_CHECK std::cout << CHECK_STREAM << std::endl
 

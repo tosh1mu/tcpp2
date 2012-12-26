@@ -36,21 +36,26 @@ public:
 	virtual int cols() const = 0;
 
 	/**
-	 * @brief Virtual function to get array size
+	 * @brief Virtual function to get total number of elements
 	 */
 	virtual int size() const = 0;
 
 	/**
 	 * @brief Virtual function to get const reference of the element
 	 */
-	virtual const T& elem( int index ) const = 0;
+	virtual const T& elem( int row, int col ) const = 0;
 
 	/**
 	 * @brief Virtual function to get reference of the element
 	 */
-	virtual T& elemRef( int index ) = 0;
+	virtual T& elemRef( int row, int col ) = 0;
 };
 
 } /* namespace tcpp */
 
 #endif /* TCPP_ARRAY2D_HPP_ */
+
+
+
+
+
