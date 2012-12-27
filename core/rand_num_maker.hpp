@@ -1,5 +1,5 @@
 /**
- * @file random.hpp
+ * @file rand_num_maker.hpp
  * @brief 
  * @author Toshimitsu Takahashi
  * @date 2012/12/26
