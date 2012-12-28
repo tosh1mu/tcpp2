@@ -1,13 +1,13 @@
 /**
- * @file numeric1d_interface.hpp
- * @brief Interface of 1-dimensional numeric types
+ * @file numarray1d_interface.hpp
+ * @brief Interface of 1-dimensional numeric arrays
  * @author Toshimitsu Takahashi
- * @date 2012/12/27
+ * @date 2012/12/28
  *
  */
 
-#ifndef TCPP_NUMERIC1D_INTERFACE_HPP_
-#define TCPP_NUMERIC1D_INTERFACE_HPP_
+#ifndef TCPP_NUMARRAY1D_INTERFACE_HPP_
+#define TCPP_NUMARRAY1D_INTERFACE_HPP_
 
 /**
  * @namespace tcpp
@@ -18,12 +18,12 @@ namespace tcpp {
  * @brief Interface class of 1-dimensional numeric types
  */
 template <typename T>
-class Numeric1dInterface {
+class NumArray1dInterface {
 public:
 	/**
 	 * @brief Virtual destructor
 	 */
-	virtual ~Numeric1dInterface() = 0;
+	virtual ~NumArray1dInterface() {}
 
 	/********** Virtual accessors **********/
 	/**
@@ -46,12 +46,9 @@ public:
 	/**
 	 * @brief Virtual function to get the number of coefficients
 	 */
-	virtual int count() const = 0;
+	virtual int length() const = 0;
 };
-
-template <typename T>
-Numeric1dInterface<T>::~Numeric1dInterface() {}
 
 } /* namespace tcpp */
 
-#endif /* TCPP_NUMERIC1D_INTERFACE_HPP_ */
+#endif /* TCPP_NUMARRAY1D_INTERFACE_HPP_ */

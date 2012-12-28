@@ -23,13 +23,21 @@
 #define CHECK_STREAM "***CHECK***" << "[" << PLACE_STREAM << "]"
 
 /* print infos */
-#define PRINT_ERROR(MSG) std::cout << ERROR_STREAM(MSG) << std::endl
-#define PRINT_WARNING(MSG) std::cout << WARNING_STREAM(MSG) << std::endl
+#define PRINT_ERROR(MSG) std::cerr << ERROR_STREAM(MSG) << std::endl
+#define PRINT_WARNING(MSG) std::cerr << WARNING_STREAM(MSG) << std::endl
 #define PRINT_CHECK std::cout << CHECK_STREAM << std::endl
 
 /* streams of value */
 #define VAL_STREAM(VAL) #VAL << " = " << VAL
 #define VAL_STREAM2(VAL, DESC) DESC << "(" << #VAL << ") = " << VAL
+
+/* print value */
+#define PRINT_VAL(VAL) std::cout << VAL_STREAM(VAL) << std::endl
+#define PRINT_VAL2(VAL, DESC) std::cout << VAL_STREAM2(VAL, DESC) << std::endl
+#define PRINT_STDVEC(VEC) std::cout << #VEC << " = {" << VEC[0];	\
+	for( size_t i = 1; i < VEC.size(); ++i ) {						\
+		std::cout << ", " << VEC[i]; }								\
+	std::cout << "}" << std::endl
 
 #endif /* TCPP2_MACROS_HPP_ */
 

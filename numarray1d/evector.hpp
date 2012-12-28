@@ -1,17 +1,17 @@
 /**
- * @file stl_vector1d.hpp
+ * @file evector.hpp
  * @brief
  * @author Toshimitsu Takahashi
- * @date 2012/12/27
+ * @date 2012/12/25
  *
  */
 
-#ifndef TCPP_STL_VECTOR1D_HPP_
-#define TCPP_STL_VECTOR1D_HPP_
+#ifndef TCPP_EVECTOR_HPP_
+#define TCPP_EVECTOR_HPP_
 
-#include "numeric1d_interface.hpp"
+#include "numarray1d_interface.hpp"
 #include <cassert>
-#include <vector>
+#include <eigen3/Eigen/Core>
 
 /**
  * @namespace tcpp
@@ -19,28 +19,28 @@
 namespace tcpp {
 
 /**
- * @brief Adapter class of std::vector<T> for Numeric1dInterface<T>
+ * @brief Adapter class of Eigen::Matrix<T, rows, 1> for Numeric1dInterface<T>
  */
-template <typename T>
-class StlVector1d: public Numeric1dInterface<T> {
+template <typename T, int rows>
+class EVector: public NumArray1dInterface<T> {
 public:
 	/********** Constructors **********/
 	/**
 	 * @brief Constructor
-	 * @param[in] body Main body(std::vector<T>)
+	 * @param[in] body Main body(Eigen::Array<T, rows, 1>)
 	 */
-	StlVector1d( std::vector<T>& body ): body_(body) {}
+	EVector( Eigen::Matrix<T, rows, 1>& body ): body_(body) {}
 
 	/********** Accessors **********/
 	/**
 	 * @brief Access to the main body
 	 */
-	const std::vector<T>& body() const { return body_; }
+	const Eigen::Matrix<T, rows, 1>& body() const { return body_; }
 
 	/**
 	 * @brief Access to the main body
 	 */
-	std::vector<T>& bodyRef() const { return body_; }
+	Eigen::Matrix<T, rows, 1>& bodyRef() const { return body_; }
 
 	/**
 	 * @brief Access to the coefficient
@@ -48,8 +48,8 @@ public:
 	 * @return const reference of the coefficient
 	 */
 	const T& coeff( int index ) const {
-		assert( index >= 0 && index < count() );
-		return body_[index];
+		assert( index >= 0 && index < length() );
+		return body_.coeff(index);
 	}
 
 	/**
@@ -58,8 +58,8 @@ public:
 	 * @return reference (non-const) of the coefficient
 	 */
 	T& coeffRef( int index ) {
-		assert( index >= 0 && index < count() );
-		return body_[index];
+		assert( index >= 0 && index < length() );
+		return body_.coeffRef(index);
 	}
 
 	/********** Mutators **********/
@@ -69,8 +69,8 @@ public:
 	 * @param[in] value Value the coefficient is set to
 	 */
 	void set_coeff( int index, T value ) {
-		assert( index >= 0 && index < count() );
-		body_[index] = value;
+		assert( index >= 0 && index < length() );
+		body_.coeffRef(index) = value;
 	}
 
 	/**
@@ -80,21 +80,21 @@ public:
 	 */
 	template <typename T1>
 	void SetCoeff( int index, T1 value ) {
-		assert( index >= 0 && index < count() );
-		body_[index] = static_cast<T>( value );
+		assert( index >= 0 && index < length() );
+		body_.coeffRef(index) = static_cast<T>( value );
 	}
 
 	/**
 	 * @brief Get the number of coefficients
 	 */
-	int count() const {
-		return static_cast<int>( body_.size() );
+	int length() const {
+		return body_.rows();
 	}
 
 private:
-	std::vector<T>& body_;
+	Eigen::Matrix<T, rows, 1>& body_;
 };
 
 } /* namespace tcpp */
 
-#endif /* TCPP_STL_VECTOR1D_HPP_ */
+#endif /* TCPP_EVECTOR_HPP_ */
