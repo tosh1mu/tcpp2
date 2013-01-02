@@ -24,6 +24,21 @@ public:
 	 * @brief Virtual destructor
 	 */
 	virtual ~VectorSetInterface() {}
+
+	/**
+	 * @brief
+	 */
+	int dimension() {}
+
+	/**
+	 * @brief
+	 */
+	int size() {}
+
+	/**
+	 * @brief
+	 */
+	
 };
 
 } /* namespace tcpp */
