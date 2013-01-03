@@ -1,15 +1,15 @@
 /**
  * @file lbp_extractor.hpp
- * @brief BRIEF_EXPLANATION
- * @author takahashi
- * @date 2012/12/19
+ * @brief 
+ * @author Toshimitsu Takahashi
+ * @date 2013/1/3
  * @version 0.0.1
  */
 
 #ifndef TCPP_LBP_EXTRACTOR_HPP_
 #define TCPP_LBP_EXTRACTOR_HPP_
 
-#include "feature_extractor.hpp"
+#include "feature_extractor_interface.hpp"
 
 #include <cmath>
 #include <opencv2/core/core.hpp>
@@ -21,10 +21,10 @@ namespace tcpp{
 /**
  * @namespace ip
  */
-namespace ip{
+namespace vision{
 
 template <typename T>
-class LBPExtractor: public FeatureExtractor<T> {
+class LBPExtractor: public FeatureExtractorInterface<T> {
 public:
 	/**
 	 * @brief Default constructor
@@ -37,15 +37,10 @@ public:
 	 * @param cellimg_cols Number of cols
 	 */
 	LBPExtractor( size_t cellimg_rows, size_t cellimg_cols ):
-		FeatureExtractor<T>( cellimg_rows * cellimg_cols * pow(2, 8) ),
-		cellimg_rows_(cellimg_rows), cellimg_cols_(cellimg_cols), cell_rows_(0), cell_cols_(0) {}
+		cellimg_rows_(cellimg_rows), cellimg_cols_(cellimg_cols), cell_rows_(0), cell_cols_(0),
+		dimension_( cellimg_rows * cellimg_cols * pow(2, 8) ) {}
 
-	/**
-	 * @brief Destructor
-	 */
-	virtual ~LBPExtractor() {}
-
-	virtual void Extract( const cv::Mat& image, std::vector<T>& features ) {
+	void Extract( const cv::Mat& image, std::vector<T>& features ) {
 		/* assertion */
 		assert( features.empty() );
 
@@ -53,7 +48,7 @@ public:
 		cell_rows_ = image.rows / cellimg_rows_;
 		cell_cols_ = image.cols / cellimg_cols_;
 
-		features.resize( this->dimension(), 0 );
+		features.resize( dimension_, 0 );
 		for( Index pixel_row = 0; pixel_row < static_cast<size_t>(image.rows); ++pixel_row ) {
 			for( Index pixel_col = 0; pixel_col < static_cast<size_t>(image.cols); ++pixel_col ) {
 				Index cell_index = GetCellIndex( pixel_row, pixel_col );
@@ -67,14 +62,6 @@ public:
 
 	}
 private:
-	/* parameters */
-	size_t cellimg_rows_; //!< Number of cells in a column of a cell-divided image
-	size_t cellimg_cols_; //!< Number of cells in a row of a cell-divided image
-
-	/* variables */
-	size_t cell_rows_; //!< Number of pixels in a column of a cell
-	size_t cell_cols_; //!< Number of pixels in a row of a cell
-
 	/* typedefs */
 	typedef unsigned int Index;
 
@@ -128,10 +115,19 @@ private:
 		return bin_index;
 	}
 
+	/* parameters */
+	size_t cellimg_rows_; //!< Number of cells in a column of a cell-divided image
+	size_t cellimg_cols_; //!< Number of cells in a row of a cell-divided image
+	size_t dimension_;
+
+	/* variables */
+	size_t cell_rows_; //!< Number of pixels in a column of a cell
+	size_t cell_cols_; //!< Number of pixels in a row of a cell
+
 };
 
 
-} /* namespace ip */
+} /* namespace vision */
 } /* namespace tcpp */
 
 #endif /* LBP_EXTRACTOR_HPP_ */

@@ -2,14 +2,14 @@
  * @file hog_extractor.hpp
  * @brief HOGExtractor class
  * @author Toshimitsu Takahashi
- * @date 2012/12/19
+ * @date 2013/1/3
  * @version 0.0.1
  */
 
 #ifndef TCPP_HOG_EXTRACTOR_HPP_
 #define TCPP_HOG_EXTRACTOR_HPP_
 
-#include "feature_extractor.hpp"
+#include "feature_extractor_interface.hpp"
 
 #include <cmath>
 #include <opencv2/core/core.hpp>
@@ -19,22 +19,25 @@
  */
 namespace tcpp{
 /**
- * @namespace ip
+ * @namespace vision
  */
-namespace ip{
+namespace vision{
 
 /**
  * @class	HOGExtractor
  * @brief	HOG Extractor class
  */
 template <typename T>
-class HOGExtractor: public FeatureExtractor<T> {
+class HOGExtractor: public FeatureExtractorInterface<T> {
 public:
 	/**
 	 * @brief	Default constructor
 	 */
-	HOGExtractor(): cellimg_rows_(0), cellimg_cols_(0), block_rows_(0), block_cols_(0), grad_orientation_num_(0),
-		blockimg_rows_(0), blockimg_cols_(0), block_num_(0), unit_angle_(0), cell_rows_(0), cell_cols_(0) {}
+	HOGExtractor(): cellimg_rows_(0), cellimg_cols_(0),
+					block_rows_(0), block_cols_(0),
+					grad_orientation_num_(0),
+					dimension_(0),
+					blockimg_rows_(0), blockimg_cols_(0), block_num_(0), unit_angle_(0), cell_rows_(0), cell_cols_(0) {}
 
 	/**
 	 * @brief Constructor with feature parameters
@@ -45,8 +48,8 @@ public:
 	 * @param[in] grad_orientation_num Number of quantized gradient orientation
 	 */
 	HOGExtractor( size_t cellimg_rows, size_t cellimg_cols, size_t block_rows, size_t block_cols, size_t grad_orientation_num ):
-		FeatureExtractor<T>( grad_orientation_num * block_rows * block_cols * ( cellimg_rows - block_rows + 1 ) * ( cellimg_cols - block_cols + 1 ) ),
 		cellimg_rows_(cellimg_rows), cellimg_cols_(cellimg_cols), block_rows_(block_rows), block_cols_(block_cols), grad_orientation_num_(grad_orientation_num),
+		dimension_( grad_orientation_num * block_rows * block_cols * ( cellimg_rows - block_rows + 1 ) * ( cellimg_cols - block_cols + 1 ) ),
 		blockimg_rows_( cellimg_rows_ - block_rows_ + 1 ), blockimg_cols_( cellimg_cols_ - block_cols_ + 1 ), block_num_( blockimg_rows_ * blockimg_cols_ ),
 		unit_angle_( M_PI / grad_orientation_num_ ), cell_rows_(0), cell_cols_(0)
 		{
@@ -55,24 +58,21 @@ public:
 #endif
 		}
 
-	/**
-	 * @brief Destructor
-	 */
-	virtual ~HOGExtractor() {}
+	size_t dimension() const { return dimension_; }
 
 	/**
 	 * @brief Extract HOG features
 	 * @param[in] image Input image
 	 * @param[out] features HOG features
 	 */
-	virtual void Extract( const cv::Mat& image, std::vector<T>& features ) {
+	void Extract( const cv::Mat& image, std::vector<T>& features ) {
 		/* calculate size of cell */
 		cell_rows_ = image.rows / cellimg_rows_;
 		cell_cols_ = image.cols / cellimg_cols_;
 
 		/* extraction */
 		CellHistograms cell_histograms = cv::Mat_<double>::zeros( cellimg_rows_*cellimg_cols_, grad_orientation_num_ );
-		features.resize( this->dimension_, 0 );
+		features.resize( dimension_, 0 );
 #ifdef _OPENMP
 #pragma omp parallel
 #endif
@@ -97,24 +97,6 @@ public:
 	}
 
 private:
-	/* parameters */
-	size_t cellimg_rows_; //!< Number of cells in a column of a cell-divided image
-	size_t cellimg_cols_; //!< Number of cells in a row of a cell-divided image
-	size_t block_rows_; //!< Number of cells in a column of a block
-	size_t block_cols_; //!< Number of cells in a row of a block
-	size_t grad_orientation_num_; //!< Number of quantized gradient orientation
-
-	/* static variables */
-	static const double epsilon_ = 1E-10; //!< maximum number to treat as zero
-
-	/* variables */
-	size_t blockimg_rows_;
-	size_t blockimg_cols_;
-	size_t block_num_; //!< Number of blocks
-	double unit_angle_; //!< Unit of angle to quantize
-	size_t cell_rows_; //!< Number of pixels in a column of a cell
-	size_t cell_cols_; //!< Number of pixels in a row of a cell
-
 	/* typedefs */
 	typedef unsigned int Index;
 	typedef cv::Mat_<double> CellHistograms;
@@ -125,6 +107,25 @@ private:
 	 * @brief	Parameters of gradient
 	 */
 	struct Gradient { double magnitude; int orientation; };
+
+	/* static variables */
+	static const double epsilon_ = 1E-10; //!< maximum number to treat as zero
+
+	/* parameters */
+	size_t cellimg_rows_; //!< Number of cells in a column of a cell-divided image
+	size_t cellimg_cols_; //!< Number of cells in a row of a cell-divided image
+	size_t block_rows_; //!< Number of cells in a column of a block
+	size_t block_cols_; //!< Number of cells in a row of a block
+	size_t grad_orientation_num_; //!< Number of quantized gradient orientation
+	size_t dimension_;
+
+	/* variables */
+	size_t blockimg_rows_;
+	size_t blockimg_cols_;
+	size_t block_num_; //!< Number of blocks
+	double unit_angle_; //!< Unit of angle to quantize
+	size_t cell_rows_; //!< Number of pixels in a column of a cell
+	size_t cell_cols_; //!< Number of pixels in a row of a cell
 
 	/* methods */
 	/**
@@ -226,7 +227,7 @@ private:
 	 * @param[out] descriptors
 	 */
 	void CalcBlockDescriptors( const CellHistograms& cell_histograms, const Index& block_index, std::vector<T>& descriptors ) const {
-		assert( descriptors.size() == this->dimension_ );
+		assert( descriptors.size() == dimension_ );
 
 		std::vector<Index> cell_index_list;
 		GetCellIndexList( block_index, cell_index_list );
@@ -255,7 +256,7 @@ private:
 	}
 };
 
-} /* namespace ip */
+} /* namespace vision */
 } /* namespace tcpp */
 
 #endif /* HOG_EXTRACTOR_HPP_ */
