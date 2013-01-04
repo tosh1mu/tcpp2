@@ -14,10 +14,15 @@
  * @namespace tcpp
  */
 namespace tcpp {
+/**
+ * @namespace vision
+ */
+namespace vision {
 
-class ImageClassifier {
+class ImageClassifierInterface {
 };
 
+} /* namespace vision */
 } /* namespace tcpp */
 
 #endif /* TCPP_IMAGE_CLASSIFIER_INTERFACE_HPP_ */
