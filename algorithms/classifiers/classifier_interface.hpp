@@ -12,6 +12,7 @@
 
 #include <string>
 #include <vector>
+#include <map>
 
 /**
  * @namespace tcpp
@@ -27,7 +28,7 @@ public:
 	virtual int GetClassLabels( std::vector<int>& labels ) = 0;
 	virtual int GetDimension() = 0;
 	virtual int Predict( const std::vector<T>& x ) = 0;
-	virtual int PredictProb( const std::vector<T>& x, std::vector<double>& prob ) = 0;
+	virtual int PredictProb( const std::vector<T>& x, std::map<int, double>& prob ) = 0;
 }; /* ClassifierInterface */
 
 } /* namespace tcpp */

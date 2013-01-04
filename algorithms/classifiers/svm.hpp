@@ -83,7 +83,7 @@ public:
 		return static_cast<int>( predict_label );
 	}
 
-	int PredictProb( const std::vector<T>& x, std::vector<double>& prob ) {
+	int PredictProb( const std::vector<T>& x, std::map<int, double>& prob ) {
 		int dimension = scale_info_.dimension();
 		assert( static_cast<int>( x.size() ) == dimension );
 		assert( prob.empty() );
@@ -98,9 +98,10 @@ public:
 			int class_num = libsvm_model_->nr_class;
 			double probs[class_num];
 			double predict_label = svm_predict_probability( libsvm_model_, nodes, &probs );
-			prob.reserve( class_num );
+			std::vector<int> class_labels;
+			GetClassLabels( class_labels );
 			for( int i = 0; i < class_num; ++i ) {
-				prob.push_back( probs[i] );
+				prob[ class_labels[i] ] = probs[i];
 			}
 			return static_cast<int>( predict_label );
 		} else {

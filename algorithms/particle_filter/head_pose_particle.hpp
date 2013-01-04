@@ -19,6 +19,10 @@ namespace tcpp {
 class HeadPoseParticle: public ParticleInterface {
 public:
 	/**
+	 * @brief Default constructor
+	 */
+	HeadPoseParticle(): x_(0), y_(0), s_(0), d_(0) {}
+	/**
 	 * @brief Constructor
 	 */
 	HeadPoseParticle( int x, int y, int s, int d ):
@@ -29,6 +33,9 @@ public:
 	int s() const { return s_; }
 	int d() const { return d_; }
 
+	void set_x( int x ) { x_ = x; }
+	void set_y( int y ) { y_ = y; }
+	void set_s( int s ) { s_ = s; }
 	void set_d( int d ) { d_ = d; }
 
 private:

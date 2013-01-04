@@ -19,7 +19,7 @@
  */
 namespace tcpp{
 /**
- * @namespace ip
+ * @namespace vision
  */
 namespace vision{
 
@@ -40,6 +40,8 @@ public:
 		cellimg_rows_(cellimg_rows), cellimg_cols_(cellimg_cols), cell_rows_(0), cell_cols_(0),
 		dimension_( cellimg_rows * cellimg_cols * pow(2, 8) ) {}
 
+	size_t dimension() const { return dimension_; }
+
 	void Extract( const cv::Mat& image, std::vector<T>& features ) {
 		/* assertion */
 		assert( features.empty() );
@@ -59,7 +61,6 @@ public:
 				}
 			}
 		}
-
 	}
 private:
 	/* typedefs */
