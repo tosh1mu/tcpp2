@@ -1,16 +1,16 @@
 /**
- * @file head_pose_particle_evaluater.hpp
- * @brief Evaluater of head pose particle
+ * @file head_pose_particle_evaluator.hpp
+ * @brief Evaluator of head pose particle
  * @author Toshimitsu Takahashi
  * @date 2013/1/3
  * @version 0.0.1
  *
  */
 
-#ifndef TCPP_HEAD_POSE_PARTICLE_EVALUATER_HPP_
-#define TCPP_HEAD_POSE_PARTICLE_EVALUATER_HPP_
+#ifndef TCPP_HEAD_POSE_PARTICLE_EVALUATOR_HPP_
+#define TCPP_HEAD_POSE_PARTICLE_EVALUATOR_HPP_
 
-#include "particle_evaluater_interface.hpp"
+#include "particle_evaluator_interface.hpp"
 #include "head_pose_particle.hpp"
 
 #include <tcpp2/vision/image_classifiers/lbp_svm_classifier.hpp>
@@ -23,10 +23,10 @@
  */
 namespace tcpp {
 
-class HeadPoseParticleEvaluater: public ParticleEvaluaterInterface {
+class HeadPoseParticleEvaluator: public ParticleEvaluatorInterface {
 public:
 	/* constructor, copy, destructor */
-	HeadPoseParticleEvaluater(
+	HeadPoseParticleEvaluator(
 		int x_min, int x_max, int y_min, int y_max,
 		int s_min, int s_max, int d_min, int d_max,
 		int lbp_rows, int lbp_cols,

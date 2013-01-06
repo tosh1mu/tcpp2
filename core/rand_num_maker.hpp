@@ -28,7 +28,9 @@ public:
 	 * @brief Constructor
 	 */
 	RandNumMaker():
-		generator_( static_cast<unsigned long>( time(0) ) ), random_( generator_, distribution_ ) {}
+		generator_( static_cast<unsigned long>( time(0) ) ),
+		random_( generator_, distribution_ )
+		{}
 
 	/**
 	 * @brief Constructor
@@ -36,7 +38,10 @@ public:
 	 */
 	template<typename T1>
 	explicit RandNumMaker( T1 a1 ):
-		generator_( static_cast<unsigned long>( time(0) ) ), distribution_(a1), random_( generator_, distribution_ ) {}
+		generator_( static_cast<unsigned long>( time(0) ) ),
+		distribution_(a1),
+		random_( generator_, distribution_ )
+		{}
 
 	/**
 	 * @brief Constructor
@@ -46,7 +51,9 @@ public:
 	template<typename T1, typename T2>
 	RandNumMaker( T1 min, T2 max ):
 		generator_( static_cast<unsigned long>( time(0) ) ),
-		distribution_( min, max ), random_( generator_, distribution_ ) {}
+		distribution_( min, max ),
+		random_( generator_, distribution_ )
+		{}
 
 	/********** Operators **********/
 	/**
