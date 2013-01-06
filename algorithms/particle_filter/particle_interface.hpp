@@ -1,6 +1,6 @@
 /**
  * @file particle_interface.hpp
- * @brief Definition of interface class of particle
+ * @brief Interface class of particle
  * @author Toshimitsu Takahashi
  * @date 2013/1/3
  *
@@ -16,10 +16,9 @@ namespace tcpp {
 
 class ParticleInterface {
 public:
-	virtual ~ParticleInterface() = 0;
+	virtual ~ParticleInterface() {}
+	virtual int Size() const = 0;
 };
-
-ParticleInterface::~ParticleInterface() {}
 
 } /* namespace tcpp */
 

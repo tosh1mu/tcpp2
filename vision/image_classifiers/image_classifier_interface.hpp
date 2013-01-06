@@ -10,6 +10,9 @@
 #ifndef TCPP_IMAGE_CLASSIFIER_INTERFACE_HPP_
 #define TCPP_IMAGE_CLASSIFIER_INTERFACE_HPP_
 
+#include <map>
+#include <opencv2/core/core.hpp>
+
 /**
  * @namespace tcpp
  */
@@ -20,6 +23,11 @@ namespace tcpp {
 namespace vision {
 
 class ImageClassifierInterface {
+public:
+	virtual ~ImageClassifierInterface() {}
+	virtual void SetResizeSize( int resize_width, int resize_height ) = 0;
+	virtual int Predict( const cv::Mat& image ) = 0;
+	virtual int PredictProbability( const cv::Mat& image, std::map<int, double>& probabilities ) = 0;
 };
 
 } /* namespace vision */

@@ -22,6 +22,7 @@ namespace tcpp {
 template <typename T>
 class ClassifierInterface {
 public:
+	virtual ~ClassifierInterface() {}
 	virtual int Save( const std::string& path ) = 0;
 	virtual int Load( const std::string& path ) = 0;
 	virtual int GetClassNum() = 0;
