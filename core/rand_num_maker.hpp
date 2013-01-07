@@ -28,8 +28,7 @@ public:
 	 * @brief Constructor
 	 */
 	RandNumMaker():
-		generator_( static_cast<unsigned long>( time(0) ) ),
-		random_( generator_, distribution_ )
+		generator_( static_cast<unsigned int>( time(0) ) )
 		{}
 
 	/**
@@ -38,9 +37,8 @@ public:
 	 */
 	template<typename T1>
 	explicit RandNumMaker( T1 a1 ):
-		generator_( static_cast<unsigned long>( time(0) ) ),
-		distribution_(a1),
-		random_( generator_, distribution_ )
+		generator_( static_cast<unsigned int>( time(0) ) ),
+		distribution_(a1)
 		{}
 
 	/**
@@ -50,9 +48,8 @@ public:
 	 */
 	template<typename T1, typename T2>
 	RandNumMaker( T1 min, T2 max ):
-		generator_( static_cast<unsigned long>( time(0) ) ),
-		distribution_( min, max ),
-		random_( generator_, distribution_ )
+		generator_( static_cast<unsigned int>( time(0) ) ),
+		distribution_( min, max )
 		{}
 
 	/********** Operators **********/
@@ -60,12 +57,16 @@ public:
 	 * @brief Generate randome numeric value
 	 * @return Random numeric value
 	 */
-	typename Distribution::result_type operator()() { return random_(); }
+	typename Distribution::result_type operator()() { return distribution_(generator_); }
+
+	template <typename T1>
+	void Seed( T1 seed ) {
+		generator_.seed( static_cast<unsigned int>( seed ) );
+	}
 	
 private:
 	Generator generator_;
 	Distribution distribution_;
-	boost::variate_generator<Generator, Distribution> random_;
 };
 
 } /* namespace tcpp */

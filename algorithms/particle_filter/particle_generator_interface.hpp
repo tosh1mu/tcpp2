@@ -19,7 +19,7 @@ namespace tcpp {
 
 class ParticleGeneratorInterface {
 public:
-	virtual ~ParticleInterface() {}
+	virtual ~ParticleGeneratorInterface() {}
 	virtual void Generate(
 		const ParticleInterface& src_particle,
 		ParticleInterface& dst_particle
@@ -29,3 +29,4 @@ public:
 } /* namespace tcpp */
 
 #endif /* PARTICLE_GENERATOR_INTERFACE_HPP_ */
+
