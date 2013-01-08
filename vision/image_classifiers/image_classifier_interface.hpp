@@ -11,6 +11,7 @@
 #define TCPP_IMAGE_CLASSIFIER_INTERFACE_HPP_
 
 #include <map>
+#include <boost/shared_ptr.hpp>
 #include <opencv2/core/core.hpp>
 
 /**

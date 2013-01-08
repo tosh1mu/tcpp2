@@ -39,7 +39,7 @@ public:
 
 private:
 	const cv::Mat& image_;
-}
+};
 
 } /* namespace tcpp */
 
