@@ -7,10 +7,10 @@
  *
  */
 
-#ifndef HEAD_POSE_PARTICLE_GENERATOR_HPP_
-#define HEAD_POSE_PARTICLE_GENERATOR_HPP_
+#ifndef TCPP_HEAD_POSE_PARTICLE_GENERATOR_HPP_
+#define TCPP_HEAD_POSE_PARTICLE_GENERATOR_HPP_
 
-#include "particle_generator_interface.hpp"
+#include "tcpp2/algorithms/particle_filter/particle_generator_interface.hpp"
 #include "head_pose_particle.hpp"
 
 #include <tcpp2/core/rand_num_maker.hpp>
@@ -19,8 +19,13 @@
  * @namespace tcpp
  */
 namespace tcpp {
+/**
+ * @namespace vision
+ */
+namespace vision {
 
-class HeadPoseParticleGenerator: public ParticleGeneratorInterface<HeadPoseParticle> {
+class HeadPoseParticleGenerator:
+		public tcpp::ParticleGeneratorInterface<HeadPoseParticle> {
 public:
 	/* Constructor */
 	HeadPoseParticleGenerator( double sigma_x, double sigma_y, double sigma_s, double sigma_d ):
@@ -73,6 +78,7 @@ private:
 	RandNumMaker<boost::normal_distribution<> > rand_x_, rand_y_, rand_s_, rand_d_;
 };
 
+} /* namespace vision */
 } /* namespace tcpp */
 
-#endif /* HEAD_POSE_PARTICLE_GENERATOR_HPP_ */
+#endif /* TCPP_HEAD_POSE_PARTICLE_GENERATOR_HPP_ */

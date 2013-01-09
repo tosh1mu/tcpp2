@@ -11,6 +11,14 @@
 
 #include <opencv2/core/core.hpp>
 
+#ifdef USING_BOOST_SERIALIZATION
+#include <boost/serialization/serialization.hpp>
+#include <boost/serialization/version.hpp>
+#include <boost/serialization/nvp.hpp>
+#include <boost/archive/xml_oarchive.hpp>
+#include <boost/archive/xml_iarchive.hpp>
+#endif /* #ifdef USING_BOOST_SERIALIZATION */
+
 /**
  * @namespace tcpp
  */
@@ -91,12 +99,27 @@ public:
 	 * @return cv::Rect_<T>
 	 */
 	cv::Rect_<T> cv_rect() const { return cv::Rect( x0_, y0_, width(), height() ); }
+
+	cv::Point_<T> left_upper() const { return cv::Point_<T>(x0_, y0_); }
+
+	cv::Point_<T> right_lower() const { return cv::Point_<T>(x1_, y1_); }
 	
 private:
 	T x0_; //!< x-coordinate of left-upper point
 	T y0_; //!< y-coordinate of left-upper point
 	T x1_; //!< x-coordinate of right-lower point
 	T y1_; //!< y-coordinate of right-lower point
+
+#ifdef USING_BOOST_SERIALIZATION
+	friend class boost::serialization::access;
+	template <class Archive>
+	void serialize( Archive& archive, unsigned int version ) {
+		archive & boost::serialization::make_nvp("x0", x0_);
+		archive & boost::serialization::make_nvp("y0", y0_);
+		archive & boost::serialization::make_nvp("x1", x1_);
+		archive & boost::serialization::make_nvp("y1", y1_);
+	}
+#endif /* #ifdef USING_BOOST_SERIALIZATION */
 };
 
 } /* namespace vision */

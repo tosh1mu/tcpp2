@@ -18,9 +18,9 @@
 
 /* info streams */
 #define PLACE_STREAM __func__ << "() at line " << __LINE__ << " of " << __FILE__
-#define ERROR_STREAM(MSG) "***ERROR***" << MSG << "[" << PLACE_STREAM << "]"
-#define WARNING_STREAM(MSG) "***WARNING***" << MSG << "[" << PLACE_STREAM << "]"
-#define CHECK_STREAM "***CHECK***" << "[" << PLACE_STREAM << "]"
+#define ERROR_STREAM(MSG) "***ERROR***" << MSG << " [" << PLACE_STREAM << "]"
+#define WARNING_STREAM(MSG) "***WARNING***" << MSG << " [" << PLACE_STREAM << "]"
+#define CHECK_STREAM "***CHECK***" << " [" << PLACE_STREAM << "]"
 
 /* print infos */
 #define PRINT_ERROR(MSG) std::cerr << ERROR_STREAM(MSG) << std::endl

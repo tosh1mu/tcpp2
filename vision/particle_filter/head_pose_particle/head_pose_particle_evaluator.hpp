@@ -10,11 +10,11 @@
 #ifndef TCPP_HEAD_POSE_PARTICLE_EVALUATOR_HPP_
 #define TCPP_HEAD_POSE_PARTICLE_EVALUATOR_HPP_
 
-#include "particle_evaluator_interface.hpp"
+#include "tcpp2/algorithms/particle_filter/particle_evaluator_interface.hpp"
 #include "head_pose_particle.hpp"
 #include "head_pose_particle_eval_base.hpp"
 
-#include <tcpp2/vision/image_classifiers/image_classifier_interface.hpp>
+#include "tcpp2/vision/image_classifiers/image_classifier_interface.hpp"
 
 #include <cassert>
 #include <opencv2/core/core.hpp>
@@ -28,9 +28,13 @@
  * @namespace tcpp
  */
 namespace tcpp {
+/**
+ * @namespace vision
+ */
+namespace vision {
 
 class HeadPoseParticleEvaluator:
-		public ParticleEvaluatorInterface<HeadPoseParticle, HeadPoseParticleEvalBase> {
+		public tcpp::ParticleEvaluatorInterface<HeadPoseParticle, HeadPoseParticleEvalBase> {
 public:
 	/* constructor, copy, destructor */
 	HeadPoseParticleEvaluator( int s_min, int s_max, int d_min, int d_max,
@@ -189,6 +193,7 @@ private:
 	tcpp::vision::ImageClassifierInterface& classifier_;
 };
 
+} /* namespace vision */
 } /* namespace tcpp */
 
 #endif /* TCPP_HEAD_POSE_PARTICLE_EVALUATER_HPP_ */

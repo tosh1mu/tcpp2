@@ -9,15 +9,19 @@
 #ifndef TCPP_HEAD_POSE_PARTICLE_HPP_
 #define TCPP_HEAD_POSE_PARTICLE_HPP_
 
-#include "particle_interface.hpp"
+#include "tcpp2/algorithms/particle_filter/particle_interface.hpp"
 #include <cmath>
 
 /**
  * @namespace tcpp
  */
 namespace tcpp {
+/**
+ * @namespace vision
+ */
+namespace vision {
 
-class HeadPoseParticle: public ParticleInterface {
+class HeadPoseParticle: public tcpp::ParticleInterface {
 public:
 	/**
 	 * @brief Default constructor
@@ -86,6 +90,7 @@ private:
 	int d_; //!< Direction label of the head
 };
 
+} /* namespace vision */
 } /* namespace tcpp */
 
 #endif /* TCPP_HEAD_POSE_PARTICLE_HPP_ */

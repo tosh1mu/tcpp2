@@ -10,9 +10,8 @@
 #ifndef TCPP_HEAD_POSE_PARTICLE_EVAL_BASE_HPP_
 #define TCPP_HEAD_POSE_PARTICLE_EVAL_BASE_HPP_
 
-#include "particle_eval_base_interface.hpp"
-
-#include <tcpp2/vision/types/roi.hpp>
+#include "tcpp2/algorithms/particle_filter/particle_eval_base_interface.hpp"
+#include "tcpp2/vision/types/roi.hpp"
 
 #include <cassert>
 #include <opencv2/core/core.hpp>
@@ -21,8 +20,12 @@
  * @namespace tcpp
  */
 namespace tcpp {
+/**
+ * @namespace vision
+ */
+namespace vision {
 
-class HeadPoseParticleEvalBase: public ParticleEvalBaseInterface
+class HeadPoseParticleEvalBase: public tcpp::ParticleEvalBaseInterface
 {
 public:
 	HeadPoseParticleEvalBase( const cv::Mat& image, int offset_x, int offset_y ):
@@ -45,6 +48,7 @@ private:
 	int offset_x_, offset_y_;
 };
 
+} /* namespace vision */
 } /* namespace tcpp */
 
 #endif /* TCPP_HEAD_POSE_PARTICLE_EVAL_BASE_HPP_ */

@@ -1,21 +1,29 @@
-/*
- * show_roi.hpp
+/**
+ * @file visualize_roi.hpp
+ * @brief Functions to visualize tcpp::vision::ROI<T>
+ * @author Toshimitsu Takhashi
+ * @date 2013/1/10
+ * @version 0.0.1
  *
- *  Created on: 2012/11/29
- *      Author: takahashi
  */
 
-#ifndef TCPP_SHOW_ROI_HPP_
-#define TCPP_SHOW_ROI_HPP_
+#ifndef TCPP_VISUALIZE_ROI_HPP_
+#define TCPP_VISUALIZE_ROI_HPP_
 
-#include "../../core/core.hpp"
-#include "../roi.hpp"
+#include "tcpp2/vision/types/roi.hpp"
+#include "tcpp2/core/convert/string_numeric_convert.hpp"
 
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
+/**
+ * @namespace tcpp
+ */
 namespace tcpp {
-namespace ip {
+/**
+ * @namespace vision
+ */
+namespace vision {
 
 template <typename T>
 void DrawROI(const cv::Mat& src_img, const ROI<T>& roi, cv::Mat& dst_img, cv::Scalar color = cv::Scalar(0, 0, 255), int thickness = 2, int line_type = 8 ) {
@@ -60,12 +68,13 @@ void DrawROIs(const cv::Mat &src_img, const std::map<int, ROI<T> > &rois, cv::Ma
 		ROI<T> roi = (*roi_itr).second;
 		cv::Point_<T> left_upper = roi.left_upper(), right_lower = roi.right_lower(), right_upper = roi.right_upper();
 		cv::rectangle( dst_img, left_upper, right_lower, rect_color, 2, 3);
-		cv::putText(dst_img, tcpp::string(label), right_upper, cv::FONT_HERSHEY_SIMPLEX, 0.7, label_color, 2, CV_AA);
+		cv::putText(dst_img, tcpp::string(label), right_upper, cv::FONT_HERSHEY_SIMPLEX,
+					0.7, label_color, 2, CV_AA);
 		++roi_itr;
 	}
 }
 
-}
-}
+} /* namespace vision */
+} /* namespace tcpp */
 
-#endif /* TCPP_SHOW_ROI_HPP_ */
+#endif /* TCPP_VISUALIZE_ROI_HPP_ */
