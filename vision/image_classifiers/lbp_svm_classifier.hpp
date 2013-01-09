@@ -29,7 +29,7 @@ namespace vision {
 class LbpSvmClassifier: public ImageClassifierInterface {
 public:
 	LbpSvmClassifier( int lbp_rows, int lbp_cols, const std::string& libsvm_model_file, const std::string& libsvm_scale_file ):
-		lbp_extractor_( lbp_rows, lbp_cols ), svm_( libsvm_scale_file, libsvm_scale_file ),
+		lbp_extractor_( lbp_rows, lbp_cols ), svm_( libsvm_model_file, libsvm_scale_file ),
 		resize_size_(0, 0) {}
 
 	void SetResizeSize( int resize_width, int resize_height ) {

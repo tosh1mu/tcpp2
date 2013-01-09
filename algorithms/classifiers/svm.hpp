@@ -97,7 +97,7 @@ public:
 			GetSVMNodes( scaled_x, nodes );
 			int class_num = libsvm_model_->nr_class;
 			double probs[class_num];
-			double predict_label = svm_predict_probability( libsvm_model_, nodes, &probs );
+			double predict_label = svm_predict_probability( libsvm_model_, nodes, probs );
 			std::vector<int> class_labels;
 			GetClassLabels( class_labels );
 			for( int i = 0; i < class_num; ++i ) {

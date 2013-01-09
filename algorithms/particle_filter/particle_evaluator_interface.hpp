@@ -18,29 +18,32 @@
  */
 namespace tcpp {
 
+template<class PC, class PEBC>
 class ParticleEvaluatorInterface {
 public:
 	virtual ~ParticleEvaluatorInterface() {}
 
 	virtual bool Validate(
-		const ParticleInterface& particle,
-		const ParticleEvalBaseInterface& eval_base ) = 0;
+		PC& particle,
+		const PEBC& eval_base ) = 0;
 
 	virtual double Likelihood(
-		const ParticleInterface& particle,
-		const ParticleEvalBaseInterface& eval_base ) = 0;
+		const PC& particle,
+		const PEBC& eval_base ) = 0;
 
 	/**
 	 * @brief Get particle which has maximum likelihood
 	 */
 	virtual double GetBestParticle(
-		const ParticleEvalBaseInterface& eval_base,
-		ParticleInterface& best_particle ) = 0;
+		const PEBC& eval_base,
+		PC& best_particle ) = 0;
 };
 
 } /* namespace tcpp */
 
 #endif /* TCPP_PARTICLE_EVALUATOR_INTERFACE_HPP_ */
+
+
 
 
 

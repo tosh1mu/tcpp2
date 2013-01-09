@@ -10,6 +10,7 @@
 #define TCPP_HEAD_POSE_PARTICLE_HPP_
 
 #include "particle_interface.hpp"
+#include <cmath>
 
 /**
  * @namespace tcpp
@@ -22,6 +23,7 @@ public:
 	 * @brief Default constructor
 	 */
 	HeadPoseParticle(): x_(0), y_(0), s_(0), d_(0) {}
+	
 	/**
 	 * @brief Constructor
 	 */
@@ -32,6 +34,29 @@ public:
 		s_( static_cast<int>( floor(s + 0.5) ) ),
 		d_( static_cast<int>( floor(d + 0.5) ) ) {}
 
+	/**
+	 * @brief Copy constructor
+	 */
+	HeadPoseParticle( const HeadPoseParticle& particle ):
+		x_( particle.x_ ), y_( particle.y_ ), s_( particle.s_ ), d_( particle.d_ ) {}
+
+	HeadPoseParticle& Copy( const HeadPoseParticle& particle )
+		{
+			if( this == &particle ) {
+				return *this;
+			} else {
+				x_ = particle.x_;
+				y_ = particle.y_;
+				s_ = particle.s_;
+				d_ = particle.d_;
+				return *this;
+			}
+		}
+
+	HeadPoseParticle& operator=( const HeadPoseParticle& particle )
+		{
+			return Copy( particle );
+		}
 
 	/**
 	 * @brief Size getter
@@ -46,13 +71,13 @@ public:
 
 	/* Setters */
 	template <typename T1>
-	void set_x( T1 x ) { x_ = static_cast<int>( floor(x + 0.5) ); }
+	void set_x( T1 x ) { x_ = static_cast<int>( floor(static_cast<double>(x) + 0.5) ); }
 	template <typename T1>
-	void set_y( T1 y ) { y_ = static_cast<int>( floor(y + 0.5) ); }
+	void set_y( T1 y ) { y_ = static_cast<int>( floor(static_cast<double>(y) + 0.5) ); }
 	template <typename T1>
-	void set_s( T1 s ) { s_ = static_cast<int>( floor(s + 0.5) ); }
+	void set_s( T1 s ) { s_ = static_cast<int>( floor(static_cast<double>(s) + 0.5) ); }
 	template <typename T1>
-	void set_d( T1 d ) { d_ = static_cast<int>( floor(d + 0.5) ); }
+	void set_d( T1 d ) { d_ = static_cast<int>( floor(static_cast<double>(d) + 0.5) ); }
 
 private:
 	/* Parameters */

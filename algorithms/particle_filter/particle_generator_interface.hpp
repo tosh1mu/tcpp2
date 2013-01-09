@@ -18,21 +18,23 @@
  */
 namespace tcpp {
 
+template <class PC>
 class ParticleGeneratorInterface {
 public:
 	virtual ~ParticleGeneratorInterface() {}
 	virtual void Generate(
-		const ParticleInterface& src_particle,
-		ParticleInterface& dst_particle
+		const PC& src_particle,
+		PC& dst_particle
 	) = 0;
-	virtual void GetWeightedMean( const std::vector<ParticleInterface> particles,
-								  const std::vector<double> weights,
-								  ParticleInterface& mean_particle ) = 0;
+	virtual void GetWeightedMean( const std::vector<PC>& particles,
+								  const std::vector<double>& weights,
+								  PC& mean_particle ) = 0;
 };
 
 } /* namespace tcpp */
 
 #endif /* PARTICLE_GENERATOR_INTERFACE_HPP_ */
+
 
 
 
