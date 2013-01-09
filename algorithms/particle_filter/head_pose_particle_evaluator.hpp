@@ -19,7 +19,6 @@
 #include <cassert>
 #include <opencv2/core/core.hpp>
 
-#define USING_TBB
 #ifdef USING_TBB
 #include <tbb/parallel_for.h>
 #include <tbb/blocked_range3d.h>

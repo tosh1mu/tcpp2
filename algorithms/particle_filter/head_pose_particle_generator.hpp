@@ -44,6 +44,29 @@ public:
 			dst_hp_particle.set_d( src_hp_particle.d() + rand_d_() );
 		}
 
+	void GetWeightedMean( const std::vector<HeadPoseParticle> particles,
+						  const std::vector<double> weights,
+						  HeadPoseParticle& mean_particle )
+		{
+			assert( particles.size() == weights.size() );
+			int n = static_cast<int>( particles.size() );
+			double sum_x = 0.0;
+			double sum_y = 0.0;
+			double sum_s = 0.0;
+			double sum_d = 0.0;
+			for( int i = 0; i < n; ++i ) {
+				sum_x += static_cast<double>( particles[i].x() ) * weights[i];
+				sum_y += static_cast<double>( particles[i].y() ) * weights[i];
+				sum_s += static_cast<double>( particles[i].s() ) * weights[i];
+				sum_d += static_cast<double>( particles[i].d() ) * weights[i];
+			}
+			int mean_x = static_cast<int>( floor( sum_x / static_cast<double>( n ) + 0.5 ) );
+			int mean_y = static_cast<int>( floor( sum_y / static_cast<double>( n ) + 0.5 ) );
+			int mean_s = static_cast<int>( floor( sum_s / static_cast<double>( n ) + 0.5 ) );
+			int mean_d = static_cast<int>( floor( sum_d / static_cast<double>( n ) + 0.5 ) );
+			mean_particle = HeadPoseParticle( mean_x, mean_y, mean_s, mean_d );
+		}
+
 private:
 	/* Data member */
 	// RandNumMaker

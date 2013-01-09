@@ -11,6 +11,7 @@
 #define PARTICLE_GENERATOR_INTERFACE_HPP_
 
 #include "particle_interface.hpp"
+#include <vector>
 
 /**
  * @namespace tcpp
@@ -24,9 +25,15 @@ public:
 		const ParticleInterface& src_particle,
 		ParticleInterface& dst_particle
 	) = 0;
+	virtual void GetWeightedMean( const std::vector<ParticleInterface> particles,
+								  const std::vector<double> weights,
+								  ParticleInterface& mean_particle ) = 0;
 };
 
 } /* namespace tcpp */
 
 #endif /* PARTICLE_GENERATOR_INTERFACE_HPP_ */
+
+
+
 

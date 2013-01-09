@@ -11,6 +11,7 @@
 
 #include "particle_interface.hpp"
 #include "particle_eval_base_interface.hpp"
+#include <vector>
 
 /**
  * @namespace tcpp
