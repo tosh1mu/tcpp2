@@ -48,8 +48,7 @@ public:
 		{
 			CorrectDirection( head_pose_particle );
 			cv::Rect_<int> image_rect( eval_base.offset_x(), eval_base.offset_y(),
-									   eval_base.offset_x() + eval_base.image().cols - 1,
-									   eval_base.offset_y() + eval_base.image().rows - 1 );
+									   eval_base.image().cols, eval_base.image().rows );
 			cv::Point2i particle_lu( head_pose_particle.x(), head_pose_particle.y() );
 			cv::Point2i particle_rl( head_pose_particle.x() + head_pose_particle.s() - 1,
 									 head_pose_particle.y() + head_pose_particle.s() - 1 );
