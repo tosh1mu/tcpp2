@@ -31,11 +31,11 @@ public:
 	HeadPoseParticleGenerator( double sigma_x, double sigma_y, double sigma_s, double sigma_d ):
 		rand_x_(0, sigma_x), rand_y_(0, sigma_y), rand_s_(0, sigma_s), rand_d_(0, sigma_d)
 		{
-			//RandNumMaker<boost::uniform_int<> > seeder( 0, static_cast<int>( time(0) ) );
-			//rand_x_.Seed( seeder() );
-			//rand_y_.Seed( seeder() );
-			//rand_s_.Seed( seeder() );
-			//rand_d_.Seed( seeder() );
+			RandNumMaker<boost::uniform_int<> > seeder( 0, static_cast<int>( time(0) ) );
+			rand_x_.Seed( seeder() );
+			rand_y_.Seed( seeder() );
+			rand_s_.Seed( seeder() );
+			rand_d_.Seed( seeder() );
 		}
 
 	void Generate( const HeadPoseParticle& src_hp_particle,
