@@ -33,10 +33,9 @@ public:
 		particle_num_(particle_num), particles_(), weights_(),
 		generator_(generator), evaluator_(evaluator) {}
 	
-	void Initialize( const PEBC& eval_base )
+	void Initialize( const PEBC& eval_base, PC& initial_particle )
 		{
 			double initial_weight = 1.0 / static_cast<double>( particle_num_ );
-			PC initial_particle;
 			evaluator_.GetBestParticle( eval_base, initial_particle );
 
 			double weight_sum = 0.0;
