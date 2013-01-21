@@ -67,6 +67,9 @@ private:
 			} else {
 				resized_image = image.clone();
 			}
+			if( resized_image.channels() > 1 ) {
+				cv::cvtColor( resized_image, resized_image, CV_BGR2GRAY );
+			}
 			hog_extractor_.Extract( resized_image, hog );
 		}
 
