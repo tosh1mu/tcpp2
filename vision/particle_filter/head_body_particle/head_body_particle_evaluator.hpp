@@ -173,10 +173,10 @@ private:
 							 x < eval_base_.offset_x() + eval_base_.image().cols - s - 1; ++x ) {
 						for( int y = range.cols().begin(); y != range.cols().end() &&
 								 y < eval_base_.offset_y() + eval_base_.image().rows - s - 1; ++y ) {
-							int best_direction;
-							double probability = FindBestDirection( x, y, s, eval_base_, best_direction );
+							int best_head_dir, best_body_dir;
+							double probability = FindBestDirections( x, y, s, eval_base_, best_head_dir, best_body_dir );
 							if( probability > max_probability_ ) {
-								HeadPoseParticle particle( x, y, s, best_direction );
+								HeadBodyParticle particle( x, y, s, best_head_dir, best_body_dir );
 								best_particle_ = particle;
 								max_probability_ = probability;
 							}
@@ -191,10 +191,10 @@ private:
 				for( int s = evaluator_.s_min_; s <= evaluator_.s_max_; ++s ) {
 					for( int x = eval_base_.offset_x(); x < eval_base_.offset_x() + eval_base_.image().cols - s; ++x ) {
 						for( int y = eval_base_.offset_y(); y < eval_base_.offset_y() + eval_base_.image().rows - s; ++y ) {
-							int best_direction;
-							double probability = FindBestDirection( x, y, s, eval_base_, best_direction );
+														int best_head_dir, best_body_dir;
+							double probability = FindBestDirections( x, y, s, eval_base_, best_head_dir, best_body_dir );
 							if( probability > max_probability_ ) {
-								HeadPoseParticle particle( x, y, s, best_direction );
+								HeadBodyParticle particle( x, y, s, best_head_dir, best_body_dir );
 								best_particle_ = particle;
 								max_probability_ = probability;
 							}
@@ -206,23 +206,38 @@ private:
 	private:
 		double FindBestDirections( int x, int y, int s,
 								  const HeadBodyParticleEvalBase& eval_base,
-								   int& head_dir, int& body_dir ) const
+								   int& best_head_dir, int& best_body_dir ) const
 			{
 				std::map<int, double> head_probs, body_probs;
 				evaluator_.GetHeadProbs( eval_base, x, y, s, head_probs );
 				evaluator_.GetBodyProbs( eval_base, body_probs );
 
-				best_direction = -1;
+				best_head_dir = -1;
+				best_body_dir = -1;
 				double max_prob = 0.0;
-				for( typename std::map<int, double>::const_iterator prob_itr = probabilities.begin();
-					 prob_itr != probabilities.end(); ++prob_itr ) {
-					int label = prob_itr->first;
-					double prob = prob_itr->second;
-					if( label > -1 && prob > max_prob ) {
-						best_direction = label;
-						max_prob = prob;
+				for( typename std::map<int, double>::iterator head_itr = head_probs.begin();
+					 head_itr != head_probs.end();
+					 ++head_itr ) {
+					int head_dir = head_itr->first;
+					if( head_dir == -1 ) {
+						continue;
+					}
+					for( typename std::map<int, double>::iterator body_itr = body_probs.begin();
+						 body_itr != body_probs.end();
+						 ++body_itr ) {
+						int body_dir = body_itr->first;
+						
+						double prob = evaluator_.GetDirectionProb( head_probs, body_probs,
+																   head_dir, body_dir );
+						if( prob > max_prob ) {
+							best_head_dir = head_dir;
+							best_body_dir = body_dir;
+							max_prob = prob;
+						}
 					}
 				}
+				assert( best_head_dir >= 0 && best_head_dir < evaluator_.head_dir_num_
+						&& best_body_dir >= 0 && best_body_dir < evaluator_.body_dir_num_ );
 				return max_prob;
 			}
 		
