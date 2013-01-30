@@ -50,18 +50,21 @@ public:
 	}
 
 private:
-	void ExtractLbp( const cv::Mat& image, std::vector<double>& lbp ) {
-		cv::Mat resized_image;
-		if( resize_size_.width > 0 && resize_size_.height > 0 ) {
-			cv::resize( image, resized_image, resize_size_ );
-		} else {
-			resized_image = image.clone();
+	void ExtractLbp( const cv::Mat& image, std::vector<double>& lbp )
+		{
+			assert( image.rows > 0 && image.cols > 0 );
+			cv::Mat gray_image = image.clone();
+			if( gray_image.channels() > 1 ) {
+				cv::cvtColor( gray_image, gray_image, CV_BGR2GRAY );
+			}
+			// cv::equalizeHist( gray_image, gray_image );
+			
+			if( resize_size_.width > 0 && resize_size_.height > 0 ) {
+				cv::resize( gray_image, gray_image, resize_size_, 0, 0, cv::INTER_LINEAR );
+			}
+
+			lbp_extractor_.Extract( gray_image, lbp );
 		}
-		if( resized_image.channels() > 1 ) {
-			cv::cvtColor( resized_image, resized_image, CV_BGR2GRAY );
-		}
-		lbp_extractor_.Extract( resized_image, lbp );
-	}
 
 	LBPExtractor<double> lbp_extractor_;
 	tcpp::SVM<double> svm_;

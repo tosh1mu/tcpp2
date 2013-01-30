@@ -126,14 +126,19 @@ private:
 			for( size_t i = 0; i < x.size(); ++i ) {
 				assert( dim_mins_.count(i+1) && dim_maxs_.count(i+1) );
 				double val = static_cast<double>( x[i] );
-				double scaled_val;
 				if( val < dim_mins_[i+1] ) {
 					val = dim_mins_[i+1];
 				} else if( val > dim_maxs_[i+1] ) {
 					val = dim_maxs_[i+1];
 				}
-				scaled_val = ( ( max_ - min_ ) / ( dim_maxs_[i+1] - dim_mins_[i+1] + 1E-10 ) )
-					* ( val - dim_mins_[i+1] ) + min_;
+				double scaling_constant = dim_maxs_[i+1] - dim_mins_[i+1];
+				if( scaling_constant < 1E-10 ) {
+					scaling_constant = 0;
+				} else {
+					scaling_constant = (max_ - min_) / scaling_constant;
+				}
+				
+				double scaled_val = ( val - dim_mins_[i+1] ) * scaling_constant;
 				assert( !isnan(scaled_val) );
 				scaled_x.push_back( scaled_val );
 			}
@@ -163,8 +168,8 @@ private:
 						} else {
 							assert( split_line.size() == 3 );
 							int index = tcpp::numeric<int>( split_line[0] );
-							double dim_min = tcpp::numeric<int>( split_line[1] );
-							double dim_max = tcpp::numeric<int>( split_line[2] );;
+							double dim_min = tcpp::numeric<double>( split_line[1] );
+							double dim_max = tcpp::numeric<double>( split_line[2] );
 							assert( index > 0 );
 							assert( dim_min <= dim_max );
 							dim_mins_[index] = dim_min;

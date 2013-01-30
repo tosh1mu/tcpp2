@@ -61,16 +61,18 @@ public:
 private:
 	void ExtractHog( const cv::Mat& image, std::vector<double>& hog )
 		{
-			cv::Mat resized_image;
+			assert( image.rows > 0 && image.cols > 0 );
+			cv::Mat gray_image = image.clone();
+			if( gray_image.channels() > 1 ) {
+				cv::cvtColor( gray_image, gray_image, CV_BGR2GRAY );
+			}
+			// cv::equalizeHist( gray_image, gray_image );
+
 			if( resize_size_.width > 0 && resize_size_.height > 0 ) {
-				cv::resize( image, resized_image, resize_size_ );
-			} else {
-				resized_image = image.clone();
+				cv::resize( gray_image, gray_image, resize_size_, 0, 0, cv::INTER_LINEAR );
 			}
-			if( resized_image.channels() > 1 ) {
-				cv::cvtColor( resized_image, resized_image, CV_BGR2GRAY );
-			}
-			hog_extractor_.Extract( resized_image, hog );
+			
+			hog_extractor_.Extract( gray_image, hog );
 		}
 
 	HOGExtractor<double> hog_extractor_;
