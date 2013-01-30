@@ -1,6 +1,6 @@
 /**
  * @file head_pose_particle_generator.hpp
- * @brief Generator to HeadPoseParticle
+ * @brief Generator of HeadPoseParticle
  * @author Toshimitsu Takahashi
  * @date 2013/1/6
  * @version 0.0.1
