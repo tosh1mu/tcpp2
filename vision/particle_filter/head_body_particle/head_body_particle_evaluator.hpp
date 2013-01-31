@@ -250,7 +250,8 @@ private:
 	/* variable */
 	int s_min_, s_max_, head_dir_num_, body_dir_num_;
 	double angle_diff_mean_, angle_diff_beta_, angle_diff_weight_;
-	tcpp::vision::ImageClassifierInterface& head_classifier_, body_classifier_;
+	tcpp::vision::ImageClassifierInterface& head_classifier_;
+	tcpp::vision::ImageClassifierInterface& body_classifier_;
 };
 
 } /* namespace vision */

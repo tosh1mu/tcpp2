@@ -47,10 +47,17 @@ public:
 			dst_hp_particle.set_d<double>( static_cast<double>( src_hp_particle.d() ) + rand_d_() );
 		}
 
+#ifdef USING_TBB
+	void GetWeightedMean( const tbb::concurrent_vector<HeadPoseParticle>& particles,
+						  const tbb::concurrent_vector<double>& weights,
+						  HeadPoseParticle& mean_particle )
+		{
+#else /* USING_TBB */
 	void GetWeightedMean( const std::vector<HeadPoseParticle>& particles,
 						  const std::vector<double>& weights,
 						  HeadPoseParticle& mean_particle )
 		{
+#endif /* USING_TBB */
 			assert( particles.size() == weights.size() );
 			int n = static_cast<int>( particles.size() );
 			double sum_x = 0.0;

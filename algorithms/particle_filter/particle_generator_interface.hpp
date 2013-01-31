@@ -13,6 +13,10 @@
 #include "particle_interface.hpp"
 #include <vector>
 
+#ifdef USING_TBB
+#include <tbb/concurrent_vector.h>
+#endif /* USING_TBB */
+
 /**
  * @namespace tcpp
  */
@@ -26,9 +30,15 @@ public:
 		const PC& src_particle,
 		PC& dst_particle
 	) = 0;
+#ifdef USING_TBB
+	virtual void GetWeightedMean( const tbb::concurrent_vector<PC>& particles,
+								  const tbb::concurrent_vector<double>& weights,
+								  PC& mean_particle ) = 0;
+#else /* USING_TBB */
 	virtual void GetWeightedMean( const std::vector<PC>& particles,
 								  const std::vector<double>& weights,
 								  PC& mean_particle ) = 0;
+#endif /* USING_TBB */
 };
 
 } /* namespace tcpp */

@@ -37,9 +37,9 @@ class HeadPoseParticleEvaluator:
 		public tcpp::ParticleEvaluatorInterface<HeadPoseParticle, HeadPoseParticleEvalBase> {
 public:
 	/* constructor, copy, destructor */
-	HeadPoseParticleEvaluator( int s_min, int s_max, int d_min, int d_max,
+	HeadPoseParticleEvaluator( int s_min, int s_max, int d_num,
 			tcpp::vision::ImageClassifierInterface& classifier ):
-		s_min_(s_min), s_max_(s_max), d_min_(d_min), d_max_(d_max),
+		s_min_(s_min), s_max_(s_max), d_num_(d_num),
 		classifier_( classifier ) {}
 
 	/* method */
@@ -54,8 +54,7 @@ public:
 									 head_pose_particle.y() + head_pose_particle.s() - 1 );
 			return ( image_rect.contains( particle_lu ) &&
 					 image_rect.contains( particle_rl ) &&
-					 head_pose_particle.s() >= s_min_ && head_pose_particle.s() <= s_max_ &&
-					 head_pose_particle.d() >= d_min_ && head_pose_particle.d() <= d_max_ );
+					 head_pose_particle.s() >= s_min_ && head_pose_particle.s() <= s_max_ );
 		}
 
 	double Likelihood( const HeadPoseParticle& particle,
@@ -89,19 +88,15 @@ private:
 	/* Methods */
 	void CorrectDirection( HeadPoseParticle& head_pose_particle )
 		{
-			int src_d = head_pose_particle.d();
-			if( src_d < d_min_ || src_d > d_max_ ) {
-				int d_cycle = d_max_ - d_min_ + 1;
-				int d_correct = src_d;
-				while( d_correct < d_min_ ) {
-					d_correct += d_cycle;
-				}
-				while( d_correct > d_max_ ) {
-					d_correct -= d_cycle;
-				}
-				assert( d_correct >= d_min_ && d_correct <= d_max_ );
-				head_pose_particle.set_d( d_correct );
+			int direction = head_pose_particle.d();
+			while( direction < 0 ) {
+				direction += d_num_;
 			}
+			while( direction >= d_num_ ) {
+				direction -= d_num_;
+			}
+			assert( direction >= 0 && direction < d_num_ );
+			head_pose_particle.set_d( direction );
 		}
 
 	void GetProbabilities( const HeadPoseParticleEvalBase& eval_base,
@@ -188,7 +183,7 @@ private:
 	};
 
 	/* variable */
-	int s_min_, s_max_, d_min_, d_max_;
+	int s_min_, s_max_, d_num_;
 	tcpp::vision::ImageClassifierInterface& classifier_;
 };
 
