@@ -28,8 +28,8 @@ namespace vision {
 class HeadPoseParticleEvalBase: public tcpp::ParticleEvalBaseInterface
 {
 public:
-	HeadPoseParticleEvalBase( const cv::Mat& image, int offset_x, int offset_y ):
-		image_(image), offset_x_(offset_x), offset_y_(offset_y)
+	HeadPoseParticleEvalBase( const cv::Mat& image, int offset_x, int offset_y, double head_area_height_rate ):
+		image_(image), offset_x_(offset_x), offset_y_(offset_y), head_area_height_rate_(head_area_height_rate)
 		{
 			assert( image_.rows > 0 && image_.cols > 0 );
 		}
@@ -42,10 +42,12 @@ public:
 	const cv::Mat& image() const { return image_; }
 	int offset_x() const { return offset_x_; }
 	int offset_y() const { return offset_y_; }
+	int head_area_height() const { return static_cast<int>( floor( image_.rows * head_area_height_rate_ + 0.5 ) ); }
 
 private:
 	const cv::Mat& image_;
 	int offset_x_, offset_y_;
+	double head_area_height_rate_;
 };
 
 } /* namespace vision */

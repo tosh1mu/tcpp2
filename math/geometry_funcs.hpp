@@ -11,6 +11,7 @@
 #define TCPP_GEOMETRY_FUNCS_HPP_
 
 #include <cmath>
+#include <opencv2/core/core.hpp>
 
 namespace tcpp {
 

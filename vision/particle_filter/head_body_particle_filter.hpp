@@ -14,6 +14,8 @@
 #include "head_body_particle/head_body_particle_generator.hpp"
 #include "head_body_particle/head_body_particle_eval_base.hpp"
 #include "head_body_particle/head_body_particle_evaluator.hpp"
+#include "head_body_particle/head_body_particle_eval_base_m.hpp"
+#include "head_body_particle/head_body_particle_evaluator_m.hpp"
 #include "tcpp2/algorithms/particle_filter/particle_filter.hpp"
 
 #endif /* TCPP_HEAD_BODY_PARTICLE_FILTER_HPP_ */

@@ -15,6 +15,10 @@
 
 #include <tcpp2/core/rand_num_maker.hpp>
 
+#ifdef USING_TBB
+#include <tbb/queuing_mutex.h>
+#endif /* USING_TBB */
+
 /**
  * @namespace tcpp
  */
@@ -42,6 +46,9 @@ public:
 	void Generate( const HeadBodyParticle& src_hb_particle,
 				   HeadBodyParticle& dst_hb_particle )
 		{
+#ifdef USING_TBB
+			tbb::queuing_mutex::scoped_lock lock( mutex );
+#endif /* USING_TBB */
 			dst_hb_particle.set_x<double>( static_cast<double>( src_hb_particle.x() ) + rand_x_() );
 			dst_hb_particle.set_y<double>( static_cast<double>( src_hb_particle.y() ) + rand_y_() );
 			dst_hb_particle.set_s<double>( static_cast<double>( src_hb_particle.s() ) + rand_s_() );
@@ -49,17 +56,10 @@ public:
 			dst_hb_particle.set_db<double>( static_cast<double>( src_hb_particle.db() ) + rand_db_() );
 		}
 
-#ifdef USING_TBB
-	void GetWeightedMean( const tbb::concurrent_vector<HeadBodyParticle>& particles,
-						  const tbb::concurrent_vector<double>& weights,
+	void GetWeightedMean( const ParticleContainer& particles,
+						  const WeightContainer& weights,
 						  HeadBodyParticle& mean_particle )
 		{
-#else /* USING_TBB */
-		void GetWeightedMean( const std::vector<HeadBodyParticle>& particles,
-						  const std::vector<double>& weights,
-						  HeadBodyParticle& mean_particle )
-		{
-#endif /* USING_TBB */
 			assert( particles.size() == weights.size() );
 			int n = static_cast<int>( particles.size() );
 			double sum_x = 0.0;
@@ -88,6 +88,9 @@ private:
 	/* Data member */
 	// RandNumMaker
 	RandNumMaker<boost::normal_distribution<> > rand_x_, rand_y_, rand_s_, rand_dh_, rand_db_;
+#ifdef USING_TBB
+	tbb::queuing_mutex mutex;
+#endif /* USING_TBB */
 };
 
 } /* namespace vision */

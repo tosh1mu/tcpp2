@@ -100,6 +100,13 @@ public:
 	const Joint& knee() const { return knee_; }
 	double var_match() const { return match_stddev_; }
 
+	cv::Point2i top() const {
+		SegmentParams body_seg;
+		GetBodySegment( body_seg );
+		cv::Point2i top( body_seg.x0, body_seg.y0 );
+		return top;
+	}
+
 private:
 	struct SegmentParams {
 		int x0, y0, x1, y1;

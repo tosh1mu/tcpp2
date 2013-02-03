@@ -15,6 +15,8 @@
 #include "particle_eval_base_interface.hpp"
 #include "particle_evaluator_interface.hpp"
 
+#include <tcpp2/core/macros.hpp>
+
 #include <cassert>
 #include <cmath>
 #include <vector>
@@ -33,6 +35,9 @@ namespace tcpp {
 template <class PC, class PEBC>
 class ParticleFilter {
 public:
+	typedef typename ParticleGeneratorInterface<PC>::ParticleContainer ParticleContainer;
+	typedef typename ParticleGeneratorInterface<PC>::WeightContainer WeightContainer;
+
 	ParticleFilter( int particle_num,
 					ParticleGeneratorInterface<PC>& generator,
 					ParticleEvaluatorInterface<PC, PEBC>& evaluator ):
@@ -67,6 +72,7 @@ public:
 #ifdef USING_TBB
 			tbb::blocked_range<int> range( 0, static_cast<int>( update.prev_particles_.size() ), 100 );
 			tbb::parallel_for( range, update );
+			//update();
 #else /* USING_TBB */
 			update();
 #endif /* USING_TBB */
@@ -97,7 +103,7 @@ private:
 					while( !filter_.evaluator_.Validate( particle, eval_base_ ) ) {
 						filter_.generator_.Generate( initial_particle_, particle );
 					}
-					double updated_weight = initial_weight_ * filter_.evaluator_.Likelihood( particle, eval_base_ );
+					double updated_weight = filter_.evaluator_.Likelihood( particle, eval_base_ );
 					filter_.particles_.push_back( particle );
 					filter_.weights_.push_back( updated_weight );
 					weight_sum_ += updated_weight;
@@ -113,7 +119,7 @@ private:
 					while( !filter_.evaluator_.Validate( particle, eval_base_ ) ) {
 						filter_.generator_.Generate( initial_particle_, particle );
 					}
-					double updated_weight = initial_weight_ * filter_.evaluator_.Likelihood( particle, eval_base_ );
+					double updated_weight = filter_.evaluator_.Likelihood( particle, eval_base_ );
 					filter_.particles_.push_back( particle );
 					filter_.weights_.push_back( updated_weight );
 					weight_sum_ += updated_weight;
@@ -185,54 +191,34 @@ private:
 		ParticleFilter& filter_;
 		const PEBC& eval_base_;
 		std::vector<int> particle_num_list_;
-#ifdef USING_TBB
-		tbb::concurrent_vector<PC> prev_particles_;
-#else /* USING_TBB */
-		std::vector<PC> prev_particles_;
+		ParticleContainer prev_particles_;
 		//std::vector<double> prev_weights_;
-#endif /* USING_TBB */
 		double& weight_sum_;
 	};
 
-	void NormalizeWeights( double weight_sum ) {
-		double normalize_constant = 1.0 / weight_sum;
-#ifdef USING_TBB
-		for( tbb::concurrent_vector<double>::iterator w_itr = weights_.begin();
-			 w_itr != weights_.end(); ++w_itr ) {
-#else /* USING_TBB */
-		for( std::vector<double>::iterator w_itr = weights_.begin();
-			 w_itr != weights_.end(); ++w_itr ) {
-#endif /* USING_TBB */
-			(*w_itr) *= normalize_constant;
+	void NormalizeWeights( double weight_sum )
+		{
+			assert( weight_sum > 0.0 );
+			double normalize_constant = 1.0 / weight_sum;
+			for( typename WeightContainer::iterator w_itr = weights_.begin(); w_itr != weights_.end(); ++w_itr ) {
+				(*w_itr) *= normalize_constant;
+			}
 		}
-	}
 
 	void GetParticleNumList( std::vector<int>& particle_num_list )
 		{
 			assert( particle_num_list.empty() );
 			particle_num_list.reserve( particle_num_ );
-#ifdef USING_TBB
-			for( tbb::concurrent_vector<double>::const_iterator w_itr = weights_.begin();
-				 w_itr != weights_.end(); ++w_itr ) {
-#else /* USING_TBB */
-			for( std::vector<double>::const_iterator w_itr = weights_.begin();
-				 w_itr != weights_.end(); ++w_itr ) {
-#endif /* USING_TBB */
-				int particle_num =
-					static_cast<int>( floor( (*w_itr) * particle_num_ + 0.5 ) );
+			for( typename WeightContainer::const_iterator w_itr = weights_.begin(); w_itr != weights_.end(); ++w_itr ) {
+				int particle_num = static_cast<int>( floor( (*w_itr) * particle_num_ + 0.5 ) );
 				particle_num_list.push_back( particle_num );
 			}
 		}
 
 	/* Data member */
 	int particle_num_;
-#ifdef USING_TBB
-	tbb::concurrent_vector<PC> particles_;
-	tbb::concurrent_vector<double> weights_;
-#else /* USING_TBB */
-	std::vector<PC> particles_;
-	std::vector<double> weights_;
-#endif /* USING_TBB */
+	ParticleContainer particles_;
+	WeightContainer weights_;
 	//
 	ParticleGeneratorInterface<PC>& generator_;
 	ParticleEvaluatorInterface<PC, PEBC>& evaluator_;

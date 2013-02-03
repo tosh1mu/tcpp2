@@ -25,20 +25,22 @@ namespace tcpp {
 template <class PC>
 class ParticleGeneratorInterface {
 public:
+#ifdef USING_TBB
+	typedef tbb::concurrent_vector<PC> ParticleContainer;
+	typedef tbb::concurrent_vector<double> WeightContainer;
+#else
+	typedef std::vector<PC> ParticleContainer;
+	typedef std::vector<double> WeightContainer;
+#endif
+
 	virtual ~ParticleGeneratorInterface() {}
 	virtual void Generate(
 		const PC& src_particle,
 		PC& dst_particle
 	) = 0;
-#ifdef USING_TBB
-	virtual void GetWeightedMean( const tbb::concurrent_vector<PC>& particles,
-								  const tbb::concurrent_vector<double>& weights,
+	virtual void GetWeightedMean( const ParticleContainer& particles,
+								  const WeightContainer& weights,
 								  PC& mean_particle ) = 0;
-#else /* USING_TBB */
-	virtual void GetWeightedMean( const std::vector<PC>& particles,
-								  const std::vector<double>& weights,
-								  PC& mean_particle ) = 0;
-#endif /* USING_TBB */
 };
 
 } /* namespace tcpp */

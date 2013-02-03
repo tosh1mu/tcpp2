@@ -103,6 +103,7 @@ public:
 			for( int i = 0; i < class_num; ++i ) {
 				prob[ class_labels[i] ] = probs[i];
 			}
+			free(nodes);
 			return static_cast<int>( predict_label );
 		} else {
 			return Predict( x );

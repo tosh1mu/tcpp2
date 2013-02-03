@@ -1,19 +1,22 @@
 /**
- * @file head_pose_particle_evaluator.hpp
- * @brief Evaluator of head pose particle
+ * @file head_pose_particle_evaluator_m.hpp
+ * @brief Evaluator of head pose particle (with model)
  * @author Toshimitsu Takahashi
- * @date 2013/1/3
+ * @date 2013/2/2
  * @version 0.0.1
  *
  */
 
-#ifndef TCPP_HEAD_POSE_PARTICLE_EVALUATOR_HPP_
-#define TCPP_HEAD_POSE_PARTICLE_EVALUATOR_HPP_
+#ifndef TCPP_HEAD_POSE_PARTICLE_EVALUATOR_M_HPP_
+#define TCPP_HEAD_POSE_PARTICLE_EVALUATOR_M_HPP_
 
 #include "tcpp2/algorithms/particle_filter/particle_evaluator_interface.hpp"
 #include "head_pose_particle.hpp"
-#include "head_pose_particle_eval_base.hpp"
+#include "head_pose_particle_eval_base_m.hpp"
 
+#include "tcpp2/core/macros.hpp"
+#include "tcpp2/math/geometry_funcs.hpp"
+#include "tcpp2/math/probability.hpp"
 #include "tcpp2/vision/image_classifiers/image_classifier_interface.hpp"
 
 #include <cassert>
@@ -33,18 +36,19 @@ namespace tcpp {
  */
 namespace vision {
 
-class HeadPoseParticleEvaluator:
-		public tcpp::ParticleEvaluatorInterface<HeadPoseParticle, HeadPoseParticleEvalBase> {
+class HeadPoseParticleEvaluatorM:
+		public tcpp::ParticleEvaluatorInterface<HeadPoseParticle, HeadPoseParticleEvalBaseM> {
 public:
 	/* constructor, copy, destructor */
-	HeadPoseParticleEvaluator( int s_min, int s_max, int d_num,
-			tcpp::vision::ImageClassifierInterface& classifier ):
+	HeadPoseParticleEvaluatorM( int s_min, int s_max, int d_num,
+								tcpp::vision::ImageClassifierInterface& classifier,
+								const tcpp::Discrete2dNormalParams& head_dist_params ):
 		s_min_(s_min), s_max_(s_max), d_num_(d_num),
-		classifier_( classifier ) {}
+		classifier_( classifier ), head_dist_params_(head_dist_params) {}
 
 	/* method */
 	bool Validate( HeadPoseParticle& head_pose_particle,
-				   const HeadPoseParticleEvalBase& eval_base )
+				   const HeadPoseParticleEvalBaseM& eval_base )
 		{
 			CorrectDirection( head_pose_particle );
 			cv::Rect_<int> image_rect( eval_base.offset_x(), eval_base.offset_y(),
@@ -58,14 +62,30 @@ public:
 		}
 
 	double Likelihood( const HeadPoseParticle& particle,
-					   const HeadPoseParticleEvalBase& eval_base )
+					   const HeadPoseParticleEvalBaseM& eval_base )
 		{
 			std::map<int, double> probabilities;
 			GetProbabilities( eval_base, particle.x(), particle.y(), particle.s(), probabilities );
-			return probabilities[ particle.d() ];
+			double log_likelihood = 0.0;
+			double dir_prob = probabilities[ particle.d() ];
+			double model_prob = GetProbWithModel( eval_base, particle.x(), particle.y(), particle.s() );
+			assert( !isnan(dir_prob) && !isnan(model_prob) );
+
+			if( dir_prob > 1E-10 && model_prob > 1E-10 ) {
+				log_likelihood = log( dir_prob ) + log( model_prob );
+				if( log_likelihood > -10 ) {
+					double likelihood = exp( log_likelihood );
+					assert( !isnan( likelihood ) );
+					return likelihood;
+				} else {
+					return 0.0;
+				}
+			} else {
+				return 0.0;
+			}
 		}
 
-	double GetBestParticle( const HeadPoseParticleEvalBase& eval_base,
+	double GetBestParticle( const HeadPoseParticleEvalBaseM& eval_base,
 							 HeadPoseParticle& best_particle)
 		{
 			double max_probability = -1;
@@ -99,7 +119,7 @@ private:
 			head_pose_particle.set_d( direction );
 		}
 
-	void GetProbabilities( const HeadPoseParticleEvalBase& eval_base,
+	void GetProbabilities( const HeadPoseParticleEvalBaseM& eval_base,
 						   int x, int y, int s, std::map<int, double>& probabilities )
 		{
 			cv::Rect_<int> roi_rect( x - eval_base.offset_x(), y - eval_base.offset_y(), s, s );
@@ -107,10 +127,33 @@ private:
 			classifier_.PredictProbability( roi_image, probabilities );
 		}
 
+	double GetProbWithModel( const HeadPoseParticleEvalBaseM& eval_base,
+							 int x, int y, int s )
+		{
+			cv::Point2i model_top = eval_base.model().top();
+			model_top.x += eval_base.offset_x();
+			model_top.y += eval_base.offset_y();
+			Eigen::Vector2i vec;
+			double min_dist = 1E10;
+			for( int i = 0; i < s; ++i ) {
+				int relative_x = (x + i) - model_top.x;
+				int relative_y = (y + s - 1) - model_top.y;
+				double dist = static_cast<double>( relative_x * relative_x + relative_y * relative_y );
+				dist = sqrt(dist);
+				if( dist < min_dist ) {
+					min_dist = dist;
+					vec.coeffRef(0) = relative_x;
+					vec.coeffRef(1) = relative_y;
+				}
+			}
+			double p = tcpp::Discrete2dNormalPdf<double>( vec, head_dist_params_ );
+			return p;
+		}
+
 	class FindBestParticle {
 	public:
-		FindBestParticle( HeadPoseParticleEvaluator& evaluator,
-						  const HeadPoseParticleEvalBase& eval_base,
+		FindBestParticle( HeadPoseParticleEvaluatorM& evaluator,
+						  const HeadPoseParticleEvalBaseM& eval_base,
 						  double& max_probability,
 						  HeadPoseParticle& best_particle ):
 			evaluator_(evaluator), eval_base_(eval_base),
@@ -158,7 +201,7 @@ private:
 
 	private:
 		double FindBestDirection( int x, int y, int s,
-								  const HeadPoseParticleEvalBase& eval_base,
+								  const HeadPoseParticleEvalBaseM& eval_base,
 								  int& best_direction ) const
 			{
 				std::map<int, double> probabilities;
@@ -178,8 +221,8 @@ private:
 				return max_prob;
 			}
 		
-		HeadPoseParticleEvaluator& evaluator_;
-		const HeadPoseParticleEvalBase& eval_base_;
+		HeadPoseParticleEvaluatorM& evaluator_;
+		const HeadPoseParticleEvalBaseM& eval_base_;
 		double& max_probability_;
 		HeadPoseParticle& best_particle_;
 	};
@@ -187,9 +230,10 @@ private:
 	/* variable */
 	int s_min_, s_max_, d_num_;
 	tcpp::vision::ImageClassifierInterface& classifier_;
+	const tcpp::Discrete2dNormalParams& head_dist_params_;
 };
 
 } /* namespace vision */
 } /* namespace tcpp */
 
-#endif /* TCPP_HEAD_POSE_PARTICLE_EVALUATER_HPP_ */
+#endif /* TCPP_HEAD_POSE_PARTICLE_EVALUATER_M_HPP_ */
