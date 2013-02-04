@@ -13,6 +13,8 @@
 #include "tcpp2/algorithms/particle_filter/particle_generator_interface.hpp"
 #include "head_pose_particle.hpp"
 
+#include <complex>
+#include <stdexcept>
 #include <tcpp2/core/rand_num_maker.hpp>
 
 #ifdef USING_TBB
@@ -63,20 +65,24 @@ public:
 			double sum_x = 0.0;
 			double sum_y = 0.0;
 			double sum_s = 0.0;
-			double sum_d = 0.0;
 			double sum_weight = 0.0;
+			std::complex<double> vec_d(0, 0);
 			for( int i = 0; i < n; ++i ) {
 				sum_x += static_cast<double>( particles[i].x() ) * weights[i];
 				sum_y += static_cast<double>( particles[i].y() ) * weights[i];
 				sum_s += static_cast<double>( particles[i].s() ) * weights[i];
-				sum_d += static_cast<double>( particles[i].d() ) * weights[i];
+				double phase = static_cast<double>( particles[i].d() ) * 2 * M_PI / 8.0;
+				vec_d += std::complex<double>( weights[i]*std::cos(phase), weights[i]*std::sin(phase) );
 				sum_weight += weights[i];
 			}
 			double denominator = 1.0 / sum_weight;
 			mean_particle.set_x<double>( sum_x * denominator );
 			mean_particle.set_y<double>( sum_y * denominator );
 			mean_particle.set_s<double>( sum_s * denominator );
-			mean_particle.set_d<double>( sum_d * denominator );
+			if( std::norm(vec_d) <= 1e-10 ) {
+				throw std::runtime_error( "Failed to calculate direction average." );
+			}
+			mean_particle.set_d<double>( std::arg(vec_d) * 8.0 / 2.0 / M_PI );
 		}
 
 private:

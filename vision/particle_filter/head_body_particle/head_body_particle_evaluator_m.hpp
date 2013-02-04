@@ -17,12 +17,13 @@
 #include "tcpp2/vision/image_classifiers/image_classifier_interface.hpp"
 
 #include "tcpp2/core/macros.hpp"
+#include "tcpp2/core/algorithm.hpp"
 #include "tcpp2/math/geometry_funcs.hpp"
 #include "tcpp2/math/probability.hpp"
 #include <cassert>
 #include <cmath>
-#include <prob.hpp>
 #include <opencv2/core/core.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 
 #ifdef USING_TBB
 #include <tbb/parallel_for.h>
@@ -44,23 +45,17 @@ public:
 	/* constructor, copy, destructor */
 	HeadBodyParticleEvaluatorM( int s_min, int s_max, int head_dir_num, int body_dir_num,
 								double head_prob_weight, double body_prob_weight,
-								double angle_diff_mean, double angle_diff_beta, double angle_diff_weight,
+								double angle_diff_weight, double angle_diff_sigma,
 								tcpp::vision::ImageClassifierInterface& head_classifier,
 								tcpp::vision::ImageClassifierInterface& body_classifier,
 								const tcpp::Discrete2dNormalParams& head_dist_params ):
 		s_min_(s_min), s_max_(s_max), head_dir_num_(head_dir_num), body_dir_num_(body_dir_num),
 		head_prob_weight_(head_prob_weight), body_prob_weight_(body_prob_weight),
-		angle_diff_mean_(angle_diff_mean), angle_diff_beta_(angle_diff_beta), angle_diff_weight_(angle_diff_weight),
+		angle_diff_weight_(angle_diff_weight),
 		head_classifier_(head_classifier), body_classifier_(body_classifier),
 		head_dist_params_(head_dist_params)
 		{
-			double head_angle_unit = 2 * M_PI / static_cast<double>(head_dir_num);
-			double tmp = 0.0;
-			for( int i = 0; i < head_dir_num; ++i ) {
-				tmp += von_mises_pdf( head_angle_unit * i, angle_diff_mean, angle_diff_beta );
-			}
-			assert( tmp > 1E-10 );
-			von_mises_norm_ = 1.0 / tmp;
+			angle_diff_kernel_ = cv::getGaussianKernel( 9, angle_diff_sigma, CV_64F );
 		}
 
 	/* method */
@@ -84,6 +79,7 @@ public:
 			std::map<int, double> head_probs, body_probs;
 			GetHeadProbs( eval_base, particle.x(), particle.y(), particle.s(), head_probs );
 			GetBodyProbs( eval_base, body_probs );
+			// AdjustProbs( head_probs, body_probs, 0.5, 0.1 );
 			double log_likelihood = 0.0;
 			double dir_prob = GetDirectionProb( head_probs, body_probs, particle.dh(), particle.db() );
 			double model_prob = GetProbWithModel( eval_base, particle.x(), particle.y(), particle.s() );
@@ -161,20 +157,76 @@ private:
 			body_classifier_.PredictProbability( eval_base.image(), body_probs );
 		}
 
+	void AdjustProbs( std::map<int, double>& head_probs, std::map<int, double>& body_probs,
+					  double sigma, double max_hp_diff )
+		{
+			int max_body_label;
+			tcpp::GetMaxVal<int, double>( body_probs, max_body_label );
+			Gaussianize( body_probs, max_body_label, sigma );
+			AdjustHeadProbs( head_probs, max_body_label, max_hp_diff );
+		}
+
+	void Gaussianize( std::map<int, double>& prob, int center_label, double sigma )
+		{
+			cv::Mat gauss_kernel = cv::getGaussianKernel( 9, sigma, CV_64F );
+			for( std::map<int, double>::iterator itr = prob.begin(); itr != prob.end(); ++itr ) {
+				int label = itr->first;
+				if( label < 0 )
+					continue;
+				int distance = LabelDistance( center_label, label );
+				itr->second = gauss_kernel.at<double>( 4 + distance, 0 );
+			}
+		}
+
+	void AdjustHeadProbs( std::map<int, double>& head_probs, int max_body_label, double max_diff )
+		{
+			assert( max_diff < 1.0 );
+			double max_prob = -0.1, min_prob = 1.1, sum_prob = 0.0;
+			for( std::map<int, double>::iterator itr = head_probs.begin(); itr != head_probs.end(); ++itr ) {
+				int label = itr->first;
+				double prob = itr->second;
+				if( LabelDistance( max_body_label, label ) < -2 || LabelDistance( max_body_label, label ) > 2 ) {
+					itr->second = 0.0;
+				} else {
+					if( prob > max_prob ) {
+						max_prob = prob;
+					}
+					if( prob < min_prob ) {
+						min_prob = prob;
+					}
+					sum_prob += prob;
+				}
+			}
+			double constant = ( ( max_prob - min_prob ) - ( max_diff * sum_prob ) ) / ( 5.0 * max_diff );
+			if( constant < -min_prob ) {
+				constant = 0.0;
+			}
+			for( std::map<int, double>::iterator itr = head_probs.begin(); itr != head_probs.end(); ++itr ) {
+				int label = itr->first;
+				if( LabelDistance( max_body_label, label ) < -2 || LabelDistance( max_body_label, label ) > 2 ) {
+					continue;
+				} else {
+					double src_prob = itr->second;
+					itr->second = ( src_prob + constant ) / ( sum_prob + 5.0 * constant );
+				}
+			}
+		}
+
+	int LabelDistance( int src_label, int dst_label )
+		{
+			int distance = dst_label - src_label;
+			if( distance < -4 )
+				distance += 8;
+			if( distance > 4 )
+				distance -= 8;
+			assert( distance >= -4 && distance <= 4 );
+			return distance;
+		}
+
 	double GetDirectionDiffProb( int head_dir, int body_dir )
 		{
-			double head_angle = static_cast<double>(head_dir) * M_PI * 0.25;
-			double body_angle = static_cast<double>(body_dir) * M_PI * 0.25;
-			double angle_diff = body_angle - head_angle;
-			
-			while( angle_diff < -1 * M_PI ) {
-				angle_diff += 2 * M_PI;
-			}
-			while( angle_diff > M_PI ) {
-				angle_diff -= 2 * M_PI;
-			}
-			double pdf = von_mises_pdf( angle_diff, angle_diff_mean_, angle_diff_beta_ );
-			return pdf * von_mises_norm_;
+			int diff = LabelDistance( body_dir, head_dir );
+			return angle_diff_kernel_.at<double>( diff + 4 );
 		}
 
 	double GetDirectionProb( std::map<int, double>& head_probs, std::map<int, double>& body_probs,
@@ -328,9 +380,8 @@ private:
 
 	/* variable */
 	int s_min_, s_max_, head_dir_num_, body_dir_num_;
-	double head_prob_weight_, body_prob_weight_;
-	double angle_diff_mean_, angle_diff_beta_, angle_diff_weight_;
-	double von_mises_norm_;
+	double head_prob_weight_, body_prob_weight_, angle_diff_weight_;
+	cv::Mat angle_diff_kernel_;
 	tcpp::vision::ImageClassifierInterface& head_classifier_;
 	tcpp::vision::ImageClassifierInterface& body_classifier_;
 	const tcpp::Discrete2dNormalParams& head_dist_params_;
