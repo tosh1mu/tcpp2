@@ -76,8 +76,12 @@ public:
 #else /* USING_TBB */
 			update();
 #endif /* USING_TBB */
-			NormalizeWeights( weight_sum );
-			generator_.GetWeightedMean( particles_, weights_, estimated_particle );
+			if( weight_sum > 0.0 ) {
+				NormalizeWeights( weight_sum );
+				generator_.GetWeightedMean( particles_, weights_, estimated_particle );
+			} else {
+				Initialize( eval_base, estimated_particle );
+			}
 			assert( evaluator_.Validate( estimated_particle, eval_base ) );
 		}
 

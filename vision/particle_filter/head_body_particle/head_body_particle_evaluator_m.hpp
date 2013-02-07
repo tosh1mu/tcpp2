@@ -46,16 +46,26 @@ public:
 	HeadBodyParticleEvaluatorM( int s_min, int s_max, int head_dir_num, int body_dir_num,
 								double head_prob_weight, double body_prob_weight,
 								double angle_diff_weight, double angle_diff_sigma,
+								double model_weight,
 								tcpp::vision::ImageClassifierInterface& head_classifier,
 								tcpp::vision::ImageClassifierInterface& body_classifier,
 								const tcpp::Discrete2dNormalParams& head_dist_params ):
 		s_min_(s_min), s_max_(s_max), head_dir_num_(head_dir_num), body_dir_num_(body_dir_num),
 		head_prob_weight_(head_prob_weight), body_prob_weight_(body_prob_weight),
-		angle_diff_weight_(angle_diff_weight),
+		angle_diff_weight_(angle_diff_weight), model_weight_(model_weight),
 		head_classifier_(head_classifier), body_classifier_(body_classifier),
 		head_dist_params_(head_dist_params)
 		{
 			angle_diff_kernel_ = cv::getGaussianKernel( 9, angle_diff_sigma, CV_64F );
+			double kernel_sum = 0.0;
+			for( int i = 0; i < 9; ++i ) {
+				if( i < 2 || i > 6 ) {
+					angle_diff_kernel_.at<double>( i, 0 ) = 0.0;
+				} else {
+					kernel_sum += angle_diff_kernel_.at<double>( i, 0 );
+				}
+			}
+			angle_diff_kernel_ /= kernel_sum;
 		}
 
 	/* method */
@@ -85,8 +95,8 @@ public:
 			double model_prob = GetProbWithModel( eval_base, particle.x(), particle.y(), particle.s() );
 			assert( !isnan(dir_prob) && !isnan(model_prob) );
 
-			if( dir_prob > 1E-10 && model_prob > 1E-10 ) {
-				log_likelihood = log( dir_prob ) + log( model_prob );
+			if( dir_prob > 1E-20 && model_prob > 1E-20 ) {
+				log_likelihood = log( dir_prob ) + log( model_prob ) * model_weight_;
 				if ( log_likelihood > -10 ) {
 					double likelihood = exp( log_likelihood );
 					assert( !isnan( likelihood ) );
@@ -381,6 +391,7 @@ private:
 	/* variable */
 	int s_min_, s_max_, head_dir_num_, body_dir_num_;
 	double head_prob_weight_, body_prob_weight_, angle_diff_weight_;
+	double model_weight_;
 	cv::Mat angle_diff_kernel_;
 	tcpp::vision::ImageClassifierInterface& head_classifier_;
 	tcpp::vision::ImageClassifierInterface& body_classifier_;

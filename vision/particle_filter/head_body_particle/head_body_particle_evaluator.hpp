@@ -53,6 +53,15 @@ public:
 		head_classifier_(head_classifier), body_classifier_(body_classifier)
 		{
 			angle_diff_kernel_ = cv::getGaussianKernel( 9, angle_diff_sigma, CV_64F );
+			double kernel_sum = 0.0;
+			for( int i = 0; i < 9; ++i ) {
+				if( i < 2 || i > 6 ) {
+					angle_diff_kernel_.at<double>( i, 0 ) = 0.0;
+				} else {
+					kernel_sum += angle_diff_kernel_.at<double>( i, 0 );
+				}
+			}
+			angle_diff_kernel_ /= kernel_sum;
 		}
 
 	/* method */
